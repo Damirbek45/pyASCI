@@ -2,21 +2,21 @@ import tkinter as tk
 from tkinter import filedialog
 import pygame
 import cv2
-import time # установить pygame+cv2
+import numpy as np
+import time #установить opencv-python, numpy, pygame
 
-# Выбор файлов
+#Выбор файлов
 def select_files():
     video = filedialog.askopenfilename(title="Выберите видео", filetypes=[("MP4 files", "*.mp4")])
     audio = filedialog.askopenfilename(title="Выберите аудио", filetypes=[("MP3 files", "*.mp3")])
     return video, audio
 
-# Окно выбора
 root = tk.Tk()
 root.title("Выбор файлов")
 info_label = tk.Label(root, text="Выберите файлы: 1 - видео, 2 - аудио(аудио необязательно)", font=("Arial", 12))
 info_label.pack(pady=20)
 
-# проверка на видео
+#Запуск видео
 def start_animation():
     video, audio = select_files()
     if not video:
@@ -28,16 +28,22 @@ def start_animation():
 
     pygame.init()
     pygame.font.init()
-    chars = " .'^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$" # палитра
+    chars = " .:-=+*#%@" #палитра
+    chars_array = np.array(list(chars)) #нампи для оптимизации
+    len_chars_minus_1 = len(chars) - 1
+
+    # инициализация
+    lut = np.array([(i * len_chars_minus_1) // 255 for i in range(256)], dtype=np.uint8)
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     screen_width, screen_height = screen.get_size()
-    pygame.display.set_caption("ASCII") # название
+    pygame.display.set_caption("ASCII")
     pygame.mixer.init()
 
-    font_sizes = [1, 3, 5, 10, 15, 20, 25, 30] # размеры
-    menu_font = pygame.font.SysFont("Courier", 30)  
+    #Шрифт
+    font_sizes = [3, 5, 10, 15, 20, 25, 30]
+    menu_font = pygame.font.SysFont("Courier", 30)
 
-    # меню выбора
+    #Меню выбора
     def font_menu():
         selected_index = 0
         while True:
@@ -45,12 +51,13 @@ def start_animation():
             menu_texts = [
                 "Выберите размер шрифта (меньше - больше детализация, но дольше загрузка).",
                 "Стрелки вверх/вниз - выбор, Enter - подтвердить, ESC после загрузки - выход.",
-                "ПРИМЕЧАНИЕ: Из-за Alt+Tab скрипт не будет отвечать, но загрузка будет идти."
+                "ПРИМЕЧАНИЕ: При Alt+Tab скрипт не будет отвечать, но загрузка будет идти."
             ]
             for i, text in enumerate(menu_texts):
                 render = menu_font.render(text, True, (255, 255, 255))
                 screen.blit(render, (screen_width // 2 - render.get_width() // 2, 100 + i * 50))
 
+            #Размеры
             for i, size in enumerate(font_sizes):
                 color = (255, 255, 0) if i == selected_index else (255, 255, 255)
                 option_text = menu_font.render(f"{i + 1}. Размер - {size}", True, color)
@@ -59,7 +66,7 @@ def start_animation():
             pygame.display.flip()
             event = pygame.event.wait()
 
-            # управление
+            #Управление
             if event.type == pygame.QUIT: 
                 pygame.quit()
                 exit()
@@ -73,7 +80,7 @@ def start_animation():
                 elif event.key == pygame.K_RETURN:
                     return font_sizes[selected_index]
 
-    # Прогресс
+    #Прогресс бар
     def show_progress_bar(progress, total):
         screen.fill((0, 0, 0))
         bar_width = screen_width * 0.6
@@ -90,40 +97,46 @@ def start_animation():
     char_width, char_height = font.size("A")
     output_size = (screen_width // char_width, screen_height // char_height)
 
-    # Преобразование
+    #Трансфер в аскии
     def frame_to_ascii(frame):
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        frame = cv2.resize(frame, output_size)
-        return [''.join(chars[int(pixel) * (len(chars) - 1) // 255] for pixel in row) for row in frame]
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        resized = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
+        indices = lut[resized]
+        ascii_array = chars_array[indices]
+        ascii_frame = [''.join(row.tolist()) for row in ascii_array]
+        return ascii_frame
 
-    # Считывание информации
+    #кадры + таймкоды для синхронизации
     cap = cv2.VideoCapture(video)
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frames, timestamps = [], []
 
+    # обновление прогресс бара
     for i in range(frame_count):
         ret, frame = cap.read()
         if not ret:
             break
         frames.append(frame_to_ascii(frame))
-        timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0) # частота обновления
-        if i % 10 == 0:  
-            show_progress_bar(i + 1, frame_count) # обновление счетчика каждый 10 кадр
+        timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0)
+        if i % 100 == 0: #каждые 100 кадров
+            show_progress_bar(i + 1, frame_count)
 
     cap.release()
 
-    # Видео+аудио
+    #аудио
     def audio_anim():
         if audio:
             pygame.mixer.music.load(audio)
             pygame.mixer.music.play()
 
+        clock = pygame.time.Clock()
         start_time = time.time()
+        video_duration = timestamps[-1] if timestamps else 0
+
+        #ESC чтобы выйти
         for frame_index, ascii_frame in enumerate(frames):
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return False
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     return False
 
@@ -132,8 +145,22 @@ def start_animation():
                 screen.blit(font.render(line, True, (255, 255, 255)), (0, y * char_height))
             pygame.display.flip()
 
+            # синхронизация
             if frame_index < len(timestamps) - 1:
-                time.sleep(max(0, timestamps[frame_index + 1] - (time.time() - start_time)))
+                target_time = start_time + timestamps[frame_index + 1]
+                current_time = time.time()
+                delay = max(0, target_time - current_time)
+
+                # проверка задержки
+                if delay > 0.1:  # большие задержки
+                    time.sleep(delay * 0.95)
+                else:  # маленькие задержки
+                    while time.time() < target_time:
+                        pass
+
+            # проверка синхрона
+            if audio and time.time() - start_time > video_duration:
+                break
 
         return True
 
@@ -143,8 +170,7 @@ def start_animation():
     pygame.mixer.music.stop()
     pygame.quit()
 
-
-# Кнопка выбора+инит
+#Запуск
 start_button = tk.Button(root, text="Выбрать", font=("Arial", 14), command=start_animation)
 start_button.pack(pady=10)
 root.mainloop()
