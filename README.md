@@ -1,6 +1,6 @@
 Description
 
-This project uses cv2 and pygame to convert mp4 videos into ascii(with changable detalisation).You can also add mp3 file for audio.
+This project uses cv2 and pygame(with numpy to make better performance) to convert mp4 videos into ascii(with changable detalisation).You can also add mp3 file for audio.
 Controls - up/down to choose asci size(the lower - more details but loading is slower),ESC after loading to exit video.
 
 Installation
