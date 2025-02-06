@@ -1,17 +1,16 @@
-Description
+Description:
+This project uses opencv-python and pygame to convert mp4 videos/images into ascii(with changable detalisation).You can also add mp3 file for audio when you pick videos.
+Select a video/image file, pick a preset chars options(or create your own) and pick a size. You can exit with ESC in any moment after selecting font size. Videos/audio will loop infinitely.
 
-This project uses cv2 and pygame(with numpy to make better performance) to convert mp4 videos into ascii(with changable detalisation).You can also add mp3 file for audio.
-Controls - up/down to choose asci size(the lower - more details but loading is slower),ESC after loading to exit video.
-
-Installation
-
+Installation:
 To use this project:
 
 1)git clone https://github.com/Damirbek45/testing1.git
-
 2)cd testing1
+3)Install dependencies in requirements.txt
+4)Run the work_version.py
 
-3)Run the work_version.py
+Or else you could use .exe file if you're interested.
 
 Contributing
 
