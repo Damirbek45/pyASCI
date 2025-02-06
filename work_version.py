@@ -8,12 +8,13 @@ import threading
 import darkdetect
 
 # Настройки
-current_lang = 'ru'
+current_lang = 'en'
 current_theme = 'system'
+
 languages = {
     'en': {
         'main_title': "ASCII Transfer",
-        'select_file_prompt': "Choose file: video/image (audio is optional when choosing video)",
+        'select_file_prompt': "Choose file: video/image (audio is optional when choosing video). ESC after selecting font to exit.",
         'select_button': "Select",
         'settings_button': "Settings",
         'char_dialog_title': "Character Selection",
@@ -36,7 +37,7 @@ languages = {
     },
     'ru': {
         'main_title': "ASCII трансфер",
-        'select_file_prompt': "Выберите файл: видео/изображение (аудио опционально при выборе видео)",
+        'select_file_prompt': "Выберите файл: видео/изображение (аудио опционально при выборе видео). ESC после выбора шрифта чтобы выйти.",
         'select_button': "Выбрать",
         'settings_button': "Настройки",
         'char_dialog_title': "Выбор символов",
@@ -58,6 +59,7 @@ languages = {
         'simple': "Простой",
     }
 }
+
 themes = {
     'light': {
         'bg': 'white', 'fg': 'black',
@@ -84,11 +86,11 @@ def set_theme(theme):
 
 def get_actual_theme():
     if current_theme == 'system':
-        return darkdetect.theme() if darkdetect.theme() in ['Light', 'Dark'] else 'Light'
-    return current_theme
+        return darkdetect.theme().lower() if darkdetect.theme() in ['Light', 'Dark'] else 'light'
+    return current_theme.lower()
 
 def apply_theme(widget=None):
-    theme = get_actual_theme().lower()
+    theme = get_actual_theme()
     colors = themes.get(theme, themes['light'])
 
     def _apply(w):
@@ -97,18 +99,35 @@ def apply_theme(widget=None):
         if isinstance(w, tk.Label):
             w.config(bg=colors['bg'], fg=colors['fg'])
         elif isinstance(w, tk.Button):
-            w.config(bg=colors['button_bg'], fg=colors['button_fg'])
+            w.config(
+                bg=colors['button_bg'],
+                fg=colors['button_fg'],
+                activebackground=colors['button_bg'],
+                activeforeground=colors['button_fg']
+            )
         elif isinstance(w, tk.Entry):
             w.config(bg=colors['entry_bg'], fg=colors['entry_fg'], insertbackground=colors['fg'])
+        elif isinstance(w, tk.Frame):
+            w.config(bg=colors['bg'])
+        elif isinstance(w, tk.Radiobutton):
+            w.config(
+                bg=colors['bg'],
+                fg=colors['fg'],
+                activebackground=colors['bg'],
+                activeforeground=colors['fg'],
+                selectcolor=colors['entry_bg']
+            )
         for child in w.winfo_children():
             _apply(child)
 
     _apply(widget or root)
 
+# Обновить интерфейс
 def update_ui():
     root.title(languages[current_lang]['main_title'])
     info_label.config(text=languages[current_lang]['select_file_prompt'])
     start_button.config(text=languages[current_lang]['select_button'])
+    settings_button.config(text=languages[current_lang]['settings_button'])
     apply_theme()
 
 # Выбор файлов
@@ -179,12 +198,24 @@ def get_font_settings():
     dialog = tk.Toplevel(root)
     dialog.title(languages[current_lang]['font_dialog_title'])
     apply_theme(dialog)
-    tk.Label(dialog, text=languages[current_lang]['font_size_label'], bg=themes[get_actual_theme().lower()]['bg'], fg=themes[get_actual_theme().lower()]['fg']).grid(row=0, column=0, padx=10, pady=5)
+    colors = themes[get_actual_theme()]
+    tk.Label(dialog, text=languages[current_lang]['font_size_label'], bg=colors['bg'], fg=colors['fg']).grid(row=0, column=0, padx=10, pady=5)
     sizes = [3, 5, 10, 15, 20, 25, 30]
     size_var = tk.IntVar(value=10)
     for i, size in enumerate(sizes):
-        tk.Radiobutton(dialog, text=str(size), variable=size_var, value=size,
-                       bg=themes[get_actual_theme().lower()]['bg'], fg=themes[get_actual_theme().lower()]['fg']).grid(row=0, column=i + 1)
+        rb = tk.Radiobutton(
+            dialog,
+            text=str(size),
+            variable=size_var,
+            value=size,
+            bg=colors['bg'],
+            fg=colors['fg'],
+            activebackground=colors['bg'],
+            activeforeground=colors['fg'],
+            selectcolor=colors['entry_bg'],
+            highlightthickness=0
+        )
+        rb.grid(row=0, column=i + 1)
     tk.Button(dialog, text=languages[current_lang]['select_button'], command=dialog.destroy).grid(row=1, columnspan=len(sizes) + 1, pady=10)
     dialog.transient(root)
     dialog.grab_set()
@@ -270,7 +301,8 @@ def handle_video(video_path, audio_path, chars):
         bar_height = 40
         x, y = (screen_width - bar_width) // 2, (screen_height - bar_height) // 2
         progress_percent = int((progress / total) * 100)
-        text = font.render(f"Загрузка:{progress_percent}%", True, (255, 255, 255))
+        progress_font = pygame.font.SysFont("Courier", 20)  # Fixed size
+        text = progress_font.render(f"Загрузка:{progress_percent}%", True, (255, 255, 255))
         text_rect = text.get_rect(center=(screen_width // 2, y - 30))
         screen.blit(text, text_rect)
         pygame.draw.rect(screen, (255, 255, 255), (x, y, bar_width, bar_height), 2)
@@ -344,20 +376,51 @@ def open_settings():
     dialog = tk.Toplevel(root)
     dialog.title(languages[current_lang]['settings_button'])
     apply_theme(dialog)
+    colors = themes[get_actual_theme()]
 
     # Языки
-    tk.Label(dialog, text=languages[current_lang]['language_label'], bg=themes[get_actual_theme().lower()]['bg'], fg=themes[get_actual_theme().lower()]['fg']).grid(row=0, column=0, padx=10, pady=5)
+    lang_frame = tk.Frame(dialog, bg=colors['bg'])
+    lang_frame.grid(row=0, column=0, columnspan=3, padx=10, pady=5, sticky="w")
+    tk.Label(lang_frame, text=languages[current_lang]['language_label'], bg=colors['bg'], fg=colors['fg']).pack(side=tk.LEFT)
     lang_var = tk.StringVar(value=current_lang)
-    tk.Radiobutton(dialog, text="English", variable=lang_var, value='en', command=lambda: set_language('en')).grid(row=0, column=1)
-    tk.Radiobutton(dialog, text="Русский", variable=lang_var, value='ru', command=lambda: set_language('ru')).grid(row=0, column=2)
+    for i, (lang_code, lang_name) in enumerate([('en', 'English'), ('ru', 'Русский')]):
+        rb = tk.Radiobutton(
+            lang_frame,
+            text=lang_name,
+            variable=lang_var,
+            value=lang_code,
+            bg=colors['bg'],
+            fg=colors['fg'],
+            activebackground=colors['bg'],
+            activeforeground=colors['fg'],
+            selectcolor=colors['entry_bg'],
+            highlightthickness=0,
+            command=lambda: set_language(lang_var.get())
+        )
+        rb.pack(side=tk.LEFT, padx=5)
 
-    # Оформление
-    tk.Label(dialog, text=languages[current_lang]['theme_label'], bg=themes[get_actual_theme().lower()]['bg'], fg=themes[get_actual_theme().lower()]['fg']).grid(row=1, column=0, padx=10, pady=5)
+    # Настройки темы
+    theme_frame = tk.Frame(dialog, bg=colors['bg'])
+    theme_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=5, sticky="w")
+    tk.Label(theme_frame, text=languages[current_lang]['theme_label'], bg=colors['bg'], fg=colors['fg']).pack(side=tk.LEFT)
     theme_var = tk.StringVar(value=current_theme)
-    themes_list = ['light', 'dark', 'system']
-    for i, theme in enumerate(themes_list):
-        tk.Radiobutton(dialog, text=languages[current_lang][f'{theme}_theme'], variable=theme_var, value=theme, command=lambda t=theme: set_theme(t)).grid(row=1, column=i + 1)
-    tk.Button(dialog, text=languages[current_lang]['close_button'], command=dialog.destroy).grid(row=2, columnspan=4, pady=10)
+    for i, theme in enumerate(['light', 'dark', 'system']):
+        rb = tk.Radiobutton(
+            theme_frame,
+            text=languages[current_lang][f'{theme}_theme'],
+            variable=theme_var,
+            value=theme,
+            bg=colors['bg'],
+            fg=colors['fg'],
+            activebackground=colors['bg'],
+            activeforeground=colors['fg'],
+            selectcolor=colors['entry_bg'],
+            highlightthickness=0,
+            command=lambda t=theme: set_theme(t)
+        )
+        rb.pack(side=tk.LEFT, padx=5)
+    close_button = tk.Button(dialog, text=languages[current_lang]['close_button'], command=dialog.destroy)
+    close_button.grid(row=2, column=0, columnspan=3, pady=10)
 
 # Запуск
 root = tk.Tk()
