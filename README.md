@@ -14,7 +14,7 @@ pyASCI is a Python application that converts images and videos into ASCII chars.
 - **OpenCV** for image and video processing
 - **NumPy** for numerical operations (better optimization)
 
-The application allows to adjust the font size,select a CPU usage (High, Normal, or Low) for video processing, switch between English/Russian languages and dark/light theme selection.
+The application allows to adjust the font size,select a CPU usage (High, Normal, or Low) for video processing, select render options(in realtime or pre-render it) switch between English/Russian languages and dark/light theme selection.
 
 
 ### Current Features 
@@ -22,7 +22,8 @@ The application allows to adjust the font size,select a CPU usage (High, Normal,
 - Converts images and videos to ASCII
 - Renders output into fullscreen window
 - Adjustable font size
-- CPU usage mode selection for video processing (High, Normal, Low)
+- CPU usage mode selection for video processing (High, Normal or Low)
+- Render options for video processing (Realtime or Pre-render)
 - Language support: English / Russian
 - Theme support: Light / Dark
 
@@ -50,7 +51,7 @@ pis install pygame opencv-python numpy darkdetect
 
 1. Click the **Select** button to choose a media file (image or video).
    - For video files, you can also select an audio file.
-2. For video and image select a font appear size. For video, select a CPU Usage(renders faster but uses more resources)
+2. For video and image select a font chars size and resolution(original or fullscreen). For video, select a CPU Usage(renders faster but uses more resources) and render options(on a fly or pre-render)
 3. ASCII version will be opened in full screen after rendering, video will loop infinitely
 4. Press **ESC** to exit.
 
@@ -68,7 +69,7 @@ pyASCI это приложение на языке Python, преобразую�
 - **OpenCV** для обработки изображений и видео
 - **NumPy** для нумерационных операций (оптимизация)
 
-Приложение позволяет выбрать размер шрифта и палитру символов, режим использований ЦП (высокий, обычный, низкий) для видео рендеринга, переключатся между русским/английским языками и выбрать тёмное/светлое оформление.
+Приложение позволяет выбрать размер шрифта и палитру символов, режим использований ЦП (высокий, обычный, низкий) для видео рендеринга, выбирать режим рендера(в реальном времени или предварительный) переключатся между русским/английским языками и выбрать тёмное/светлое оформление.
 
 
 ### Текущие функции
@@ -76,7 +77,8 @@ pyASCI это приложение на языке Python, преобразую�
 - Преобразование медиа файлов в ASCII
 - Обрабатывает в полном экране
 - Изменяемый размер шрифта
-- Режимы использования ЦП (высокий, обычный и низкий)
+- Режимы использования ЦП (высокий, обычный или низкий)
+- Режимы рендера (в реальном времени или предварительный)
 - Поддерживаемые языки: Английский / Русский
 - Поддерживаемые оформления: Светлое / Тёмное
 
@@ -104,7 +106,7 @@ pis install pygame opencv-python numpy darkdetect
 
 1. Нажмите **Выбрать** для выбора медиа(видео или изображение).
    - Для видео так же можно выбрать аудио.
-2. Для видео и изображения выберите размер шрифта. Для видео выберите использование процессора (рендеринг будет быстрее, но использует больше ресурсов).
+2. Для видео и изображения выберите размер шрифта. Для видео выберите использование процессора (рендеринг будет быстрее, но использует больше ресурсов) и режим рендера(на лету или предварительная загрузка).
 3. ASCII-версия будет открыта в полном экране после рендеринга, видео будет постоянно запускаться заново.
 4. Нажмите ESC для выхода.
 
