@@ -13,6 +13,7 @@ pyASCI is a Python application that converts images and videos into ASCII chars.
 - **Pygame** for fullscreen rendering
 - **OpenCV** for image and video processing
 - **NumPy** for numerical operations (better optimization)
+- **Moviepy** for extracting audio from video
 
 The application allows to adjust the font size,select a CPU usage (High, Normal, or Low) for video processing, select render options(in realtime or pre-render it) switch between English/Russian languages and dark/light theme selection.
 
@@ -24,6 +25,7 @@ The application allows to adjust the font size,select a CPU usage (High, Normal,
 - Adjustable font size
 - CPU usage mode selection for video processing (High, Normal or Low)
 - Render options for video processing (Realtime or Pre-render)
+- Saving rendered files for images
 - Language support: English / Russian
 - Theme support: Light / Dark
 
@@ -34,24 +36,24 @@ The application allows to adjust the font size,select a CPU usage (High, Normal,
 - OpenCV-Python (`opencv-pythong`)
 - NumPy (`numpy`)
 - Darkdetect (`darkdetect`)
+- Moviepy (`moviepy`)
 
 
 ### Installation
 
 1. **Clone the repository** or download the code.
-2. **Install the required Python packages:*
+2. **Install the required Python packages:**
 
 ```
-pis install pygame opencv-python numpy darkdetect
+pip install pygame opencv-python numpy darkdetect moviepy
 ```
-3. **Run the application*
+3. **Run the application**
 
 
 ### Usage
 
 1. Click the **Select** button to choose a media file (image or video).
-   - For video files, you can also select an audio file.
-2. For video and image select a font chars size and resolution(original or fullscreen). For video, select a CPU Usage(renders faster but uses more resources) and render options(on a fly or pre-render)
+2. For video and image select a font chars size, resolution(original or fullscreen) and save file or not. For video, select a CPU Usage(renders faster but uses more resources) and render options(on a fly or pre-render)
 3. ASCII version will be opened in full screen after rendering, video will loop infinitely
 4. Press **ESC** to exit.
 
@@ -68,6 +70,7 @@ pyASCI это приложение на языке Python, преобразую�
 - **Pygame** для полноэкранного рендеринга
 - **OpenCV** для обработки изображений и видео
 - **NumPy** для нумерационных операций (оптимизация)
+- **Moviepy** для извлечения аудио из видео
 
 Приложение позволяет выбрать размер шрифта и палитру символов, режим использований ЦП (высокий, обычный, низкий) для видео рендеринга, выбирать режим рендера(в реальном времени или предварительный) переключатся между русским/английским языками и выбрать тёмное/светлое оформление.
 
@@ -94,19 +97,18 @@ pyASCI это приложение на языке Python, преобразую�
 ### Установка
 
 1. **Клонируйте репозиторий** или скачайте код.
-2. **Установите необходимые библиотеки:*
+2. **Установите необходимые библиотеки:**
 
 ```
-pis install pygame opencv-python numpy darkdetect
+pip install pygame opencv-python numpy darkdetect moviepy
 ```
-3. **Запустите приложение*
+3. **Запустите приложение**
 
 
 ### Использование
 
 1. Нажмите **Выбрать** для выбора медиа(видео или изображение).
-   - Для видео так же можно выбрать аудио.
-2. Для видео и изображения выберите размер шрифта. Для видео выберите использование процессора (рендеринг будет быстрее, но использует больше ресурсов) и режим рендера(на лету или предварительная загрузка).
+2. Для видео и изображения выберите размер шрифта. Для изображения выберите решим отображения(оригинал или растянутый на весь экран) и сохранить ли файл или нет. Для видео выберите использование процессора (рендеринг будет быстрее, но использует больше ресурсов) и режим рендера(на лету или предварительная загрузка).
 3. ASCII-версия будет открыта в полном экране после рендеринга, видео будет постоянно запускаться заново.
 4. Нажмите ESC для выхода.
 
