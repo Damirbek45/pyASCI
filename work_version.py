@@ -1,14 +1,16 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
-import pygame
-import cv2
-import numpy as np
 import time
 import threading
-import darkdetect
 import locale
 import os
 import tempfile
+import concurrent.futures
+
+import pygame
+import cv2
+import numpy as np
+import darkdetect
 import moviepy as mp
 
 # Глобальные переменные
@@ -506,7 +508,7 @@ class ASCIIApp:
             # Рендер символов
             lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
             ascii_indices = lut[resized]
-            ascii_array = np.array(list(ascii_chars))
+            ascii_array = list(ascii_chars)
             ascii_image = [''.join(ascii_array[pixel] for pixel in row) for row in ascii_indices]
             running = True
             while running:
@@ -566,17 +568,21 @@ class ASCIIApp:
                         audio_path = temp_audio_file
                     except Exception as e:
                         messagebox.showerror("Audio Error", f"Audio extraction error: {e}")
-            # Рендер символов
+            # LUT для конвертации
+            lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
+            ascii_list = list(ascii_chars)
+            # Преобразование в ASCII
             def frame_to_ascii(frame):
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 resized = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
-                lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
                 indices = lut[resized]
-                chars_array = np.array(list(ascii_chars))
-                return [''.join(chars_array[pixel] for pixel in row) for row in indices]
+                return [''.join(ascii_list[pixel] for pixel in row) for row in indices]
             # Пре-рендер
             if video_render_mode == "pre_render":
                 frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                if fps <= 0:
+                    fps = 30 # фпс по умолчанию
                 frames, timestamps = [], []
                 def show_progress_bar(progress, total):
                     screen.fill((0, 0, 0))
@@ -594,18 +600,23 @@ class ASCIIApp:
                     pygame.draw.rect(screen, (255, 255, 255), (x, y, int((progress / total) * bar_width), bar_height))
                     pygame.display.flip()
 
-                # Рендер(в зависимости от режима ЦП)
+                # Обработка кадров
                 def render_frames():
                     delay = 0 if cpu_mode == "high" else (0.01 if cpu_mode == "balanced" else 0.05)
-                    for i in range(frame_count):
-                        ret, frame = cap.read()
-                        if not ret:
-                            break
-                        frames.append(frame_to_ascii(frame))
-                        timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0)
-                        if i % FRAME_UPDATE == 0:
-                            show_progress_bar(i + 1, frame_count)
-                        time.sleep(delay)
+                    futures = []
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+                        for i in range(frame_count):
+                            ret, frame = cap.read()
+                            if not ret:
+                                break
+                            # Параллельное преобразование(thread)
+                            futures.append(executor.submit(frame_to_ascii, frame))
+                            timestamps.append(i / fps)
+                            if i % FRAME_UPDATE == 0:
+                                show_progress_bar(i + 1, frame_count)
+                            time.sleep(delay)
+                        for future in futures:
+                            frames.append(future.result())
                     show_progress_bar(frame_count, frame_count)
                 render_thread = threading.Thread(target=render_frames)
                 render_thread.start()
@@ -617,6 +628,11 @@ class ASCIIApp:
                     time.sleep(0.2)
                 render_thread.join()
                 cap.release()
+                # Проверка обработки
+                if not frames:
+                    messagebox.showerror("Error", "No frames were pre-rendered. Please check the video file.")
+                    pygame.quit()
+                    return
                 if play_audio and audio_path:
                     try:
                         pygame.mixer.music.load(audio_path)
@@ -624,7 +640,7 @@ class ASCIIApp:
                     except Exception as e:
                         messagebox.showerror("Audio Error", f"Audio error: {e}")
                 start_time = time.time()
-                current_frame_index = 0
+                clock = pygame.time.Clock()
                 running = True
                 while running:
                     for event in pygame.event.get():
@@ -634,7 +650,9 @@ class ASCIIApp:
                                 pygame.mixer.music.stop()
                             break
                     screen.fill((0, 0, 0))
-                    current_time = time.time() - start_time
+                    elapsed = time.time() - start_time
+                    # Индекс кадра по времени и fps для синхрона
+                    current_frame_index = int(elapsed * fps)
                     if current_frame_index >= len(frames):
                         start_time = time.time()
                         current_frame_index = 0
@@ -642,8 +660,7 @@ class ASCIIApp:
                     for y, line in enumerate(ascii_frame):
                         screen.blit(font.render(line, True, (255, 255, 255)), (0, y * char_height))
                     pygame.display.flip()
-                    pygame.time.Clock().tick(120)
-                    current_frame_index += 1
+                    clock.tick(60)
             else:
                 if play_audio and audio_path:
                     try:
