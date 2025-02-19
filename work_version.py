@@ -7,6 +7,7 @@ import os
 import tempfile
 import concurrent.futures
 
+# requirements
 import pygame
 import cv2
 import numpy as np
@@ -58,7 +59,15 @@ LANGUAGES = {
         "info_button": "Info",
         "save_image": "Save image after exiting",
         "play_audio": "Play audio with video",
-        "loading_text": "Loading"
+        "loading_text": "Loading",
+        "error": "Error",
+        "failed_load_image": "Failed to load image.",
+        "failed_open_video": "Failed to open video.",
+        "audio_error": "Audio Error",
+        "audio_extraction_error": "Audio extraction error: {error}",
+        "audio_error_msg": "Audio error: {error}",
+        "no_frames_error": "No frames were pre-rendered. Please check the video file.",
+        "error_occurred": "An error occurred: {error}"
     },
     "ru": {
         "main_title": "ASCII трансфер",
@@ -96,7 +105,15 @@ LANGUAGES = {
         "info_button": "Инфо",
         "save_image": "Сохранить изображение после выхода",
         "play_audio": "Воспроизводить аудио вместе с видео",
-        "loading_text": "Загрузка"
+        "loading_text": "Загрузка",
+        "error": "Ошибка",
+        "failed_load_image": "Не удалось загрузить изображение.",
+        "failed_open_video": "Не удалось открыть видео.",
+        "audio_error": "Ошибка аудио",
+        "audio_extraction_error": "Ошибка извлечения аудио: {error}",
+        "audio_error_msg": "Ошибка аудио: {error}",
+        "no_frames_error": "Не было пред-рендеренных кадров. Проверьте видеофайл.",
+        "error_occurred": "Произошла ошибка: {error}"
     }
 }
 
@@ -175,7 +192,7 @@ class ASCIIApp:
         self._build_ui()
         self.apply_theme()
 
-    # Функция определения системного языка
+    # определение языка системы
     def detect_system_language(self):
         try:
             locale.setlocale(locale.LC_ALL, '')
@@ -189,29 +206,30 @@ class ASCIIApp:
         if lang.lower().startswith("ru"):
             return "ru"
         return "en"
+    
+    def get_effective_lang(self):
+        return self.detect_system_language() if self.current_lang == "system" else self.current_lang
 
     # Инициализация основного окна приложения
     def _build_ui(self):
-        lang_code = self.detect_system_language() if self.current_lang == "system" else self.current_lang
-        self.current_lang = lang_code
-        self.root.title(self.languages[lang_code]["main_title"])
-        self.info_label = tk.Label(self.root, text=self.languages[lang_code]["select_file_prompt"], font=("Arial", 12))
+        effective_lang = self.get_effective_lang()
+        self.root.title(self.languages[effective_lang]["main_title"])
+        self.info_label = tk.Label(self.root, text=self.languages[effective_lang]["select_file_prompt"], font=("Arial", 12))
         self.info_label.pack(pady=20)
-        self.start_button = tk.Button(self.root, text=self.languages[lang_code]["select_button"],
+        self.start_button = tk.Button(self.root, text=self.languages[effective_lang]["select_button"],
                                       font=("Arial", 14), command=self.start_processing)
         self.start_button.pack(pady=10)
-        self.settings_button = tk.Button(self.root, text=self.languages[lang_code]["settings_button"],
+        self.settings_button = tk.Button(self.root, text=self.languages[effective_lang]["settings_button"],
                                          command=self.open_settings)
         self.settings_button.pack(pady=10)
 
     # Обновление текста интерфейса
     def update_ui(self):
-        lang_code = self.detect_system_language() if self.current_lang == "system" else self.current_lang
-        self.current_lang = lang_code
-        self.root.title(self.languages[lang_code]["main_title"])
-        self.info_label.config(text=self.languages[lang_code]["select_file_prompt"])
-        self.start_button.config(text=self.languages[lang_code]["select_button"])
-        self.settings_button.config(text=self.languages[lang_code]["settings_button"])
+        effective_lang = self.get_effective_lang()
+        self.root.title(self.languages[effective_lang]["main_title"])
+        self.info_label.config(text=self.languages[effective_lang]["select_file_prompt"])
+        self.start_button.config(text=self.languages[effective_lang]["select_button"])
+        self.settings_button.config(text=self.languages[effective_lang]["settings_button"])
         self.apply_theme()
 
     # Применение темы 
@@ -252,38 +270,58 @@ class ASCIIApp:
 
     # Окно настроек (выбор языка и оформления)
     def open_settings(self):
+        effective_lang = self.get_effective_lang()
         dialog = tk.Toplevel(self.root)
-        dialog.title(self.languages[self.current_lang]["settings_button"])
+        dialog.title(self.languages[effective_lang]["settings_button"])
         self.apply_theme(dialog)
         colors = self.themes[self.get_actual_theme()]
+
         # Выбор языка
         lang_frame = tk.Frame(dialog, bg=colors["bg"])
         lang_frame.grid(row=0, column=0, columnspan=3, padx=10, pady=5, sticky="w")
-        tk.Label(lang_frame, text=self.languages[self.current_lang]["language_label"],
+        tk.Label(lang_frame, text=self.languages[effective_lang]["language_label"],
                  bg=colors["bg"], fg=colors["fg"]).pack(side=tk.LEFT)
         lang_var = tk.StringVar(value=self.current_lang)
-        for code, name in [("en", "English"), ("ru", "Русский"), ("system", self.languages[self.current_lang]["system_lang"])]:
-            rb = tk.Radiobutton(lang_frame, text=name, variable=lang_var, value=code,
+        for code, default_name in [("en", "English"), ("ru", "Русский"), ("system", None)]:
+            if code == "system":
+                if self.current_lang == "system":
+                    effective_display = "English" if self.get_effective_lang() == "en" else "Русский"
+                    label = f"{self.languages[effective_lang]['system_lang']} ({effective_display})"
+                else:
+                    label = self.languages[effective_lang]["system_lang"]
+            else:
+                label = default_name
+            rb = tk.Radiobutton(lang_frame, text=label, variable=lang_var, value=code,
                                 bg=colors["bg"], fg=colors["fg"],
                                 activebackground=colors["bg"], activeforeground=colors["fg"],
                                 selectcolor=colors["entry_bg"],
                                 command=lambda: self.set_language(lang_var.get()))
             rb.pack(side=tk.LEFT, padx=5)
+
         # Выбор оформления
         theme_frame = tk.Frame(dialog, bg=colors["bg"])
         theme_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=5, sticky="w")
-        tk.Label(theme_frame, text=self.languages[self.current_lang]["theme_label"],
+        tk.Label(theme_frame, text=self.languages[effective_lang]["theme_label"],
                  bg=colors["bg"], fg=colors["fg"]).pack(side=tk.LEFT)
         theme_var = tk.StringVar(value=self.current_theme)
         for theme in ["light", "dark", "system"]:
-            rb = tk.Radiobutton(theme_frame, text=self.languages[self.current_lang][f"{theme}_theme"],
+            if theme == "system":
+                if self.current_theme == "system":
+                    effective_system = self.get_actual_theme()  
+                    label_text = f"{self.languages[effective_lang]['system_theme']} ({self.languages[effective_lang][f'{effective_system}_theme']})"
+                else:
+                    label_text = self.languages[effective_lang]["system_theme"]
+            else:
+                label_text = self.languages[effective_lang][f"{theme}_theme"]
+            rb = tk.Radiobutton(theme_frame, text=label_text,
                                 variable=theme_var, value=theme,
                                 bg=colors["bg"], fg=colors["fg"],
                                 activebackground=colors["bg"], activeforeground=colors["fg"],
                                 selectcolor=colors["entry_bg"],
-                                command=lambda t=theme: self.set_theme(t))
+                                command=lambda: self.set_theme(theme_var.get()))
             rb.pack(side=tk.LEFT, padx=5)
-        close_button = tk.Button(dialog, text=self.languages[self.current_lang]["close_button"],
+
+        close_button = tk.Button(dialog, text=self.languages[effective_lang]["close_button"],
                                  command=dialog.destroy)
         close_button.grid(row=2, column=0, columnspan=3, pady=10)
 
@@ -297,22 +335,30 @@ class ASCIIApp:
 
     # Выбор файла
     def select_files(self):
-        file_path = filedialog.askopenfilename(title=self.languages[self.current_lang]["select_file_prompt"],
-                                               filetypes=[("Video/Image", "*.mp4 *.webm *.jpg *.jpeg *.png")])
+        effective_lang = self.get_effective_lang()
+        file_path = filedialog.askopenfilename(
+            title=self.languages[effective_lang]["select_file_prompt"],
+            filetypes=[ # Расширения файлов
+                ("Video", "*.mp4 *.webm *.avi *.mkv *.mov"),
+                ("Image", "*.jpg *.jpeg *.png *.bmp *.gif"),
+                ("All Files", "*.*")
+            ]
+        )
         if not file_path:
             return None, None
-        if file_path.lower().endswith(('.jpg', '.jpeg', '.png')):
+        if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.gif')):
             return file_path, None
         else:
             return file_path, None
 
     # Выбор символов
     def get_ascii_chars(self):
+        effective_lang = self.get_effective_lang()
         dialog = tk.Toplevel(self.root)
-        dialog.title(self.languages[self.current_lang]["char_dialog_title"])
+        dialog.title(self.languages[effective_lang]["char_dialog_title"])
         colors = self.themes[self.get_actual_theme()]
         dialog.configure(bg=colors["bg"])
-        tk.Label(dialog, text=self.languages[self.current_lang]["char_preset_label"],
+        tk.Label(dialog, text=self.languages[effective_lang]["char_preset_label"],
                  bg=colors["bg"], fg=colors["fg"]).pack(pady=10)
         btn_frame = tk.Frame(dialog, bg=colors["bg"])
         btn_frame.pack()
@@ -321,13 +367,13 @@ class ASCIIApp:
             nonlocal selected_chars
             selected_chars = chars
             dialog.destroy()
-        tk.Button(btn_frame, text=self.languages[self.current_lang]["default"],
+        tk.Button(btn_frame, text=self.languages[effective_lang]["default"],
                   command=lambda: select(DEFAULT), bg=colors["button_bg"], fg=colors["button_fg"]).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text=self.languages[self.current_lang]["detailed"],
+        tk.Button(btn_frame, text=self.languages[effective_lang]["detailed"],
                   command=lambda: select(DETAILED), bg=colors["button_bg"], fg=colors["button_fg"]).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text=self.languages[self.current_lang]["minimum"],
+        tk.Button(btn_frame, text=self.languages[effective_lang]["minimum"],
                   command=lambda: select(MINIMUM), bg=colors["button_bg"], fg=colors["button_fg"]).pack(side=tk.LEFT, padx=5)
-        tk.Label(dialog, text=self.languages[self.current_lang]["char_custom_label"],
+        tk.Label(dialog, text=self.languages[effective_lang]["char_custom_label"],
                  bg=colors["bg"], fg=colors["fg"]).pack(pady=10)
         entry = tk.Entry(dialog, bg=colors["entry_bg"], fg=colors["entry_fg"])
         entry.pack()
@@ -340,7 +386,7 @@ class ASCIIApp:
                 selected_chars = chars
                 dialog.destroy()
             else:
-                error_label.config(text=self.languages[self.current_lang]["char_error_msg"])
+                error_label.config(text=self.languages[effective_lang]["char_error_msg"])
         tk.Button(dialog, text="OK", command=confirm,
                   bg=colors["button_bg"], fg=colors["button_fg"]).pack(pady=10)
         dialog.transient(self.root)
@@ -350,13 +396,14 @@ class ASCIIApp:
 
     # Настройки шрифта и режима отображения/рендеринга
     def get_font_settings(self, include_cpu_options=True):
+        effective_lang = self.get_effective_lang()
         result = None
         dialog = tk.Toplevel(self.root)
-        dialog.title(self.languages[self.current_lang]["font_dialog_title"])
+        dialog.title(self.languages[effective_lang]["font_dialog_title"])
         colors = self.themes[self.get_actual_theme()]
         self.apply_theme(dialog)
         sizes = FONT_SIZES if include_cpu_options else [1] + FONT_SIZES
-        tk.Label(dialog, text=self.languages[self.current_lang]["font_size_label"],
+        tk.Label(dialog, text=self.languages[effective_lang]["font_size_label"],
                  bg=colors["bg"], fg=colors["fg"]).grid(row=0, column=0, padx=10, pady=5, sticky="w")
         size_var = tk.IntVar(value=10)
         for i, size in enumerate(sizes):
@@ -370,58 +417,57 @@ class ASCIIApp:
 
         # Опции для видео
         if include_cpu_options:
-            tk.Label(dialog, text=self.languages[self.current_lang]["cpu_mode_label"],
+            tk.Label(dialog, text=self.languages[effective_lang]["cpu_mode_label"],
                      bg=colors["bg"], fg=colors["fg"]).grid(row=current_row, column=0, padx=10, pady=5, sticky="w")
             cpu_mode_var = tk.StringVar(value="balanced")
-            rb_high = tk.Radiobutton(dialog, text=self.languages[self.current_lang]["high_cpu_mode"],
+            rb_high = tk.Radiobutton(dialog, text=self.languages[effective_lang]["high_cpu_mode"],
                                      variable=cpu_mode_var, value="high",
                                      bg=colors["bg"], fg=colors["fg"], activebackground=colors["bg"],
                                      activeforeground=colors["fg"], selectcolor=colors["entry_bg"])
             rb_high.grid(row=current_row, column=1, padx=5, pady=5)
-            rb_balanced = tk.Radiobutton(dialog, text=self.languages[self.current_lang]["normal_cpu_mode"],
+            rb_balanced = tk.Radiobutton(dialog, text=self.languages[effective_lang]["normal_cpu_mode"],
                                          variable=cpu_mode_var, value="balanced",
                                          bg=colors["bg"], fg=colors["fg"], activebackground=colors["bg"],
                                          activeforeground=colors["fg"], selectcolor=colors["entry_bg"])
             rb_balanced.grid(row=current_row, column=2, padx=5, pady=5)
-            rb_low = tk.Radiobutton(dialog, text=self.languages[self.current_lang]["low_cpu_mode"],
+            rb_low = tk.Radiobutton(dialog, text=self.languages[effective_lang]["low_cpu_mode"],
                                     variable=cpu_mode_var, value="low",
                                     bg=colors["bg"], fg=colors["fg"], activebackground=colors["bg"],
                                     activeforeground=colors["fg"], selectcolor=colors["entry_bg"])
             rb_low.grid(row=current_row, column=3, padx=5, pady=5)
             current_row += 1
-            tk.Label(dialog, text=self.languages[self.current_lang]["video_render_mode_label"],
+            tk.Label(dialog, text=self.languages[effective_lang]["video_render_mode_label"],
                      bg=colors["bg"], fg=colors["fg"]).grid(row=current_row, column=0, padx=10, pady=5, sticky="w")
             video_render_var = tk.StringVar(value="pre_render")
-            rb_rt = tk.Radiobutton(dialog, text=self.languages[self.current_lang]["real_time"],
+            rb_rt = tk.Radiobutton(dialog, text=self.languages[effective_lang]["real_time"],
                                    variable=video_render_var, value="real_time",
                                    bg=colors["bg"], fg=colors["fg"], activebackground=colors["bg"],
                                    activeforeground=colors["fg"], selectcolor=colors["entry_bg"])
             rb_rt.grid(row=current_row, column=1, padx=5, pady=5)
-            rb_pr = tk.Radiobutton(dialog, text=self.languages[self.current_lang]["pre_render"],
+            rb_pr = tk.Radiobutton(dialog, text=self.languages[effective_lang]["pre_render"],
                                    variable=video_render_var, value="pre_render",
                                    bg=colors["bg"], fg=colors["fg"], activebackground=colors["bg"],
                                    activeforeground=colors["fg"], selectcolor=colors["entry_bg"])
             rb_pr.grid(row=current_row, column=2, padx=5, pady=5)
             current_row += 1
             play_audio_var = tk.BooleanVar(value=True)
-            cb = tk.Checkbutton(dialog, text=self.languages[self.current_lang]["play_audio"],
+            cb = tk.Checkbutton(dialog, text=self.languages[effective_lang]["play_audio"],
                                 variable=play_audio_var, bg=colors["bg"], fg=colors["fg"],
                                 selectcolor=colors["entry_bg"])
             cb.grid(row=current_row, column=0, columnspan=3, padx=10, pady=5, sticky="w")
             current_row += 1
             result = (size_var.get(), cpu_mode_var.get(), video_render_var.get(), play_audio_var.get())
         else:
-
             # Опции для изображения
-            tk.Label(dialog, text=self.languages[self.current_lang]["image_mode_label"],
+            tk.Label(dialog, text=self.languages[effective_lang]["image_mode_label"],
                      bg=colors["bg"], fg=colors["fg"]).grid(row=current_row, column=0, padx=10, pady=5, sticky="w")
             image_mode_var = tk.StringVar(value="stretch")
-            rb_keep = tk.Radiobutton(dialog, text=self.languages[self.current_lang]["keep_resolution"],
+            rb_keep = tk.Radiobutton(dialog, text=self.languages[effective_lang]["keep_resolution"],
                                      variable=image_mode_var, value="keep",
                                      bg=colors["bg"], fg=colors["fg"], activebackground=colors["bg"],
                                      activeforeground=colors["fg"], selectcolor=colors["entry_bg"])
             rb_keep.grid(row=current_row, column=1, padx=5, pady=5)
-            rb_stretch = tk.Radiobutton(dialog, text=self.languages[self.current_lang]["stretch_full"],
+            rb_stretch = tk.Radiobutton(dialog, text=self.languages[effective_lang]["stretch_full"],
                                         variable=image_mode_var, value="stretch",
                                         bg=colors["bg"], fg=colors["fg"], activebackground=colors["bg"],
                                         activeforeground=colors["fg"], selectcolor=colors["entry_bg"])
@@ -430,13 +476,12 @@ class ASCIIApp:
             save_frame = tk.Frame(dialog, bg=colors["bg"])
             save_frame.grid(row=current_row, column=0, columnspan=3, padx=10, pady=5, sticky="w")
             save_image_var = tk.BooleanVar(value=False)
-            tk.Checkbutton(save_frame, text=self.languages[self.current_lang]["save_image"],
+            tk.Checkbutton(save_frame, text=self.languages[effective_lang]["save_image"],
                            variable=save_image_var, bg=colors["bg"], fg=colors["fg"],
                            selectcolor=colors["entry_bg"]).pack(side=tk.LEFT)
             current_row += 1
             result = (size_var.get(), image_mode_var.get(), save_image_var.get())
 
-        # Инфо текст
         def show_custom_message(title, message):
             msg_win = tk.Toplevel(dialog)
             msg_win.title(title)
@@ -448,8 +493,8 @@ class ASCIIApp:
             dialog.wait_window(msg_win)
         def show_info():
             key = "video" if include_cpu_options else "image"
-            info_text = INFO_MESSAGES[key][self.current_lang]
-            show_custom_message(self.languages[self.current_lang]["info_button"], info_text)
+            info_text = INFO_MESSAGES[key][effective_lang]
+            show_custom_message(self.languages[effective_lang]["info_button"], info_text)
         bottom_frame = tk.Frame(dialog, bg=colors["bg"])
         bottom_frame.grid(row=current_row, column=0, columnspan=len(sizes)+1, sticky="ew", pady=10)
         def on_select():
@@ -459,10 +504,10 @@ class ASCIIApp:
             else:
                 result = (size_var.get(), image_mode_var.get(), save_image_var.get())
             dialog.destroy()
-        select_button = tk.Button(bottom_frame, text=self.languages[self.current_lang]["select_button"],
+        select_button = tk.Button(bottom_frame, text=self.languages[effective_lang]["select_button"],
                                   command=on_select, bg=colors["button_bg"], fg=colors["button_fg"])
         select_button.pack(side=tk.LEFT, padx=10)
-        info_button = tk.Button(bottom_frame, text=self.languages[self.current_lang]["info_button"],
+        info_button = tk.Button(bottom_frame, text=self.languages[effective_lang]["info_button"],
                                 command=show_info, bg=colors["button_bg"], fg=colors["button_fg"])
         info_button.pack(side=tk.RIGHT, padx=10)
         def on_close():
@@ -477,6 +522,7 @@ class ASCIIApp:
 
     # Обработка изображения
     def handle_image(self, image_path, ascii_chars):
+        effective_lang = self.get_effective_lang()
         settings = self.get_font_settings(include_cpu_options=False)
         if settings is None:
             return
@@ -485,7 +531,7 @@ class ASCIIApp:
             pygame.init()
             img = cv2.imread(image_path)
             if img is None:
-                messagebox.showerror("Error", "Failed to load image.")
+                messagebox.showerror(self.languages[effective_lang]["error"], self.languages[effective_lang]["failed_load_image"])
                 pygame.quit()
                 return
             # Запуск
@@ -533,11 +579,13 @@ class ASCIIApp:
                 pygame.display.flip()
             pygame.quit()
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {e}")
+            messagebox.showerror(self.languages[effective_lang]["error"],
+                                 self.languages[effective_lang]["error_occurred"].format(error=e))
             pygame.quit()
 
     # Обработка видео
     def handle_video(self, video_path, audio_path, ascii_chars):
+        effective_lang = self.get_effective_lang()
         try:
             pygame.init()
             pygame.font.init()
@@ -547,7 +595,8 @@ class ASCIIApp:
             font_size, cpu_mode, video_render_mode, play_audio = settings
             cap = cv2.VideoCapture(video_path)
             if not cap.isOpened():
-                messagebox.showerror("Error", "Failed to open video.")
+                messagebox.showerror(self.languages[effective_lang]["error"],
+                                     self.languages[effective_lang]["failed_open_video"])
                 pygame.quit()
                 return
             # Запуск 
@@ -567,7 +616,8 @@ class ASCIIApp:
                         clip.audio.write_audiofile(temp_audio_file, logger=None)
                         audio_path = temp_audio_file
                     except Exception as e:
-                        messagebox.showerror("Audio Error", f"Audio extraction error: {e}")
+                        messagebox.showerror(self.languages[effective_lang]["audio_error"],
+                                             self.languages[effective_lang]["audio_extraction_error"].format(error=e))
             # LUT для конвертации
             lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
             ascii_list = list(ascii_chars)
@@ -584,6 +634,8 @@ class ASCIIApp:
                 if fps <= 0:
                     fps = 30 # фпс по умолчанию
                 frames, timestamps = [], []
+                # ивент если нажать ESC во время загрузки(предотвращает ошибку)
+                cancel_pre_render = threading.Event()
                 def show_progress_bar(progress, total):
                     screen.fill((0, 0, 0))
                     bar_width = screen_width * 0.7
@@ -591,7 +643,7 @@ class ASCIIApp:
                     x = (screen_width - bar_width) // 2
                     y = (screen_height - bar_height) // 2
                     progress_percent = int((progress / total) * 100)
-                    loading_text = f"{self.languages[self.current_lang]['loading_text']}: {progress_percent}%"
+                    loading_text = f"{self.languages[effective_lang]['loading_text']}: {progress_percent}%"
                     progress_font = pygame.font.SysFont("Courier", 20)
                     text = progress_font.render(loading_text, True, (255, 255, 255))
                     text_rect = text.get_rect(center=(screen_width // 2, y - 30))
@@ -606,6 +658,8 @@ class ASCIIApp:
                     futures = []
                     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
                         for i in range(frame_count):
+                            if cancel_pre_render.is_set():
+                                break
                             ret, frame = cap.read()
                             if not ret:
                                 break
@@ -623,14 +677,19 @@ class ASCIIApp:
                 while render_thread.is_alive():
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                            pygame.quit()
-                            exit()
+                            cancel_pre_render.set()
                     time.sleep(0.2)
                 render_thread.join()
+                # закрытие во время пре-рендера
+                if cancel_pre_render.is_set():
+                    cap.release()
+                    pygame.quit()
+                    return
                 cap.release()
                 # Проверка обработки
                 if not frames:
-                    messagebox.showerror("Error", "No frames were pre-rendered. Please check the video file.")
+                    messagebox.showerror(self.languages[effective_lang]["error"],
+                                         self.languages[effective_lang]["no_frames_error"])
                     pygame.quit()
                     return
                 if play_audio and audio_path:
@@ -638,7 +697,8 @@ class ASCIIApp:
                         pygame.mixer.music.load(audio_path)
                         pygame.mixer.music.play()
                     except Exception as e:
-                        messagebox.showerror("Audio Error", f"Audio error: {e}")
+                        messagebox.showerror(self.languages[effective_lang]["audio_error"],
+                                             self.languages[effective_lang]["audio_error_msg"].format(error=e))
                 start_time = time.time()
                 clock = pygame.time.Clock()
                 running = True
@@ -651,7 +711,7 @@ class ASCIIApp:
                             break
                     screen.fill((0, 0, 0))
                     elapsed = time.time() - start_time
-                    # Индекс кадра по времени и fps для синхрона
+                    # Индекс кадра по времени и fps для синхрониации
                     current_frame_index = int(elapsed * fps)
                     if current_frame_index >= len(frames):
                         start_time = time.time()
@@ -667,7 +727,8 @@ class ASCIIApp:
                         pygame.mixer.music.load(audio_path)
                         pygame.mixer.music.play()
                     except Exception as e:
-                        messagebox.showerror("Audio Error", f"Audio error: {e}")
+                        messagebox.showerror(self.languages[effective_lang]["audio_error"],
+                                             self.languages[effective_lang]["audio_error_msg"].format(error=e))
                 start_time = time.time()
                 running = True
                 while running:
@@ -699,7 +760,8 @@ class ASCIIApp:
             if temp_audio_file and os.path.exists(temp_audio_file):
                 os.remove(temp_audio_file)
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {e}")
+            messagebox.showerror(self.languages[effective_lang]["error"],
+                                 self.languages[effective_lang]["error_occurred"].format(error=e))
             pygame.quit()
 
     # Старт обработки
@@ -710,12 +772,12 @@ class ASCIIApp:
         ascii_chars = self.get_ascii_chars()
         if not ascii_chars:
             return
-        if file_path.lower().endswith(('.jpg', '.jpeg', '.png')):
-            self.info_label.config(text=self.languages[self.current_lang]["processing_image"])
+        if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.gif')):
+            self.info_label.config(text=self.languages[self.get_effective_lang()]["processing_image"])
             self.root.update()
             self.handle_image(file_path, ascii_chars)
         else:
-            self.info_label.config(text=self.languages[self.current_lang]["processing_video"])
+            self.info_label.config(text=self.languages[self.get_effective_lang()]["processing_video"])
             self.root.update()
             self.handle_video(file_path, audio_path, ascii_chars)
 
