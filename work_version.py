@@ -191,6 +191,18 @@ class ASCIIApp:
         self.themes = THEMES
         self._build_ui()
         self.apply_theme()
+        self.center_window(self.root)
+
+    # для появления окон в центре экрана
+    def center_window(self, window):
+        window.update_idletasks()
+        width = window.winfo_reqwidth()
+        height = window.winfo_reqheight()
+        screen_width = window.winfo_screenwidth()
+        screen_height = window.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        window.geometry(f"+{x}+{y}")
 
     # определение языка системы
     def detect_system_language(self):
@@ -274,6 +286,7 @@ class ASCIIApp:
         dialog = tk.Toplevel(self.root)
         dialog.title(self.languages[effective_lang]["settings_button"])
         self.apply_theme(dialog)
+        self.center_window(dialog)
         colors = self.themes[self.get_actual_theme()]
 
         # Выбор языка
@@ -324,6 +337,7 @@ class ASCIIApp:
         close_button = tk.Button(dialog, text=self.languages[effective_lang]["close_button"],
                                  command=dialog.destroy)
         close_button.grid(row=2, column=0, columnspan=3, pady=10)
+        self.center_window(dialog)
 
     def set_language(self, lang):
         self.current_lang = lang
@@ -358,6 +372,7 @@ class ASCIIApp:
         dialog.title(self.languages[effective_lang]["char_dialog_title"])
         colors = self.themes[self.get_actual_theme()]
         dialog.configure(bg=colors["bg"])
+        self.center_window(dialog)
         tk.Label(dialog, text=self.languages[effective_lang]["char_preset_label"],
                  bg=colors["bg"], fg=colors["fg"]).pack(pady=10)
         btn_frame = tk.Frame(dialog, bg=colors["bg"])
@@ -402,6 +417,7 @@ class ASCIIApp:
         dialog.title(self.languages[effective_lang]["font_dialog_title"])
         colors = self.themes[self.get_actual_theme()]
         self.apply_theme(dialog)
+        self.center_window(dialog)
         sizes = FONT_SIZES if include_cpu_options else [1] + FONT_SIZES
         tk.Label(dialog, text=self.languages[effective_lang]["font_size_label"],
                  bg=colors["bg"], fg=colors["fg"]).grid(row=0, column=0, padx=10, pady=5, sticky="w")
@@ -486,6 +502,7 @@ class ASCIIApp:
             msg_win = tk.Toplevel(dialog)
             msg_win.title(title)
             self.apply_theme(msg_win)
+            self.center_window(msg_win)
             tk.Label(msg_win, text=message, bg=colors["bg"], fg=colors["fg"], wraplength=400).pack(padx=20, pady=20)
             tk.Button(msg_win, text="OK", command=msg_win.destroy,
                       bg=colors["button_bg"], fg=colors["button_fg"]).pack(pady=(0,20))
@@ -623,9 +640,22 @@ class ASCIIApp:
             ascii_list = list(ascii_chars)
             # Преобразование в ASCII
             def frame_to_ascii(frame):
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                resized = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
-                indices = lut[resized]
+                # GPU-ускорение в High CPU
+                if cpu_mode == "high" and cv2.cuda.getCudaEnabledDeviceCount() > 0:
+                    try:
+                        gpu_frame = cv2.cuda_GpuMat()
+                        gpu_frame.upload(frame)
+                        gpu_gray = cv2.cuda.cvtColor(gpu_frame, cv2.COLOR_BGR2GRAY)
+                        gpu_resized = cv2.cuda.resize(gpu_gray, output_size, interpolation=cv2.INTER_NEAREST)
+                        gray = gpu_resized.download()
+                    except Exception as e:
+                        # если ошибка - обычный рендер
+                        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                        gray = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
+                else:
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    gray = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
+                indices = lut[gray]
                 return [''.join(ascii_list[pixel] for pixel in row) for row in indices]
             # Пре-рендер
             if video_render_mode == "pre_render":
