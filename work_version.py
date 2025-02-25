@@ -25,7 +25,6 @@ FONT_SIZES = [3, 5, 10, 15, 20, 25, 30]  # размеры шрифта
 LANGUAGES = {
     "en": {
         "main_title": "ASCII Transfer",
-        "select_file_prompt": "Choose file: video/image",
         "select_button": "Select",
         "settings_button": "Settings",
         "char_dialog_title": "Character Selection",
@@ -67,11 +66,16 @@ LANGUAGES = {
         "audio_extraction_error": "Audio extraction error: {error}",
         "audio_error_msg": "Audio error: {error}",
         "no_frames_error": "No frames were pre-rendered. Please check the video file.",
-        "error_occurred": "An error occurred: {error}"
+        "error_occurred": "An error occurred: {error}",
+        "start_text": "Welcome to pyASCI!\n\n"
+                      "1. Click 'Select' to choose an image or video file for conversion.\n"
+                      "2. Choose one of the presets or make your own chars set(from darkest to lightest).\n"
+                      "3. Choose rendering settings. Info button in right bottom corner explains options difference.\n"
+                      "4. Wait for render start and receive result. Press ESC to exit while rendering.",
+        "settings_text": "Select your preferred language and theme."
     },
     "ru": {
         "main_title": "ASCII трансфер",
-        "select_file_prompt": "Выберите файл: видео/изображение",
         "select_button": "Выбрать",
         "settings_button": "Настройки",
         "char_dialog_title": "Выбор символов",
@@ -113,7 +117,13 @@ LANGUAGES = {
         "audio_extraction_error": "Ошибка извлечения аудио: {error}",
         "audio_error_msg": "Ошибка аудио: {error}",
         "no_frames_error": "Не было пред-рендеренных кадров. Проверьте видеофайл.",
-        "error_occurred": "Произошла ошибка: {error}"
+        "error_occurred": "Произошла ошибка: {error}",
+        "start_text": "Добро пожаловать в pyASCI!\n\n"
+                      "1. Нажмите 'Выбрать', чтобы выбрать файл (изображение или видео) для преобразования.\n"
+                      "2. выберите один из готовых или создайте свой набор символов(от тёмного к светлому).\n"
+                      "3. Выберите настройки преобразования. Кнопка Инфо в правом нижнем углу объясняет разницу настроек.\n"
+                      "4. Дождитесь конца рендера и получите результат. Нажмите ESC во время рендера чтобы выйти.",
+        "settings_text": "Выберите ваш предпочитаемый язык и оформление."
     }
 }
 
@@ -160,7 +170,7 @@ INFO_MESSAGES = {
             "Режим рендеринга видео:\n"
             " - Рендер в реальном времени: запускает видео сразу и обрабатывает кадры на лету. Работает лучше для современных компьютеров.\n"
             " - Предварительный рендер: обрабатывает все кадры перед запуском.\n\n"
-            "Нажмите ESC для выхода во время рендеринга/после него."
+            "Нажмите ESC для выхода во время рендера/после него."
         )
     },
     "image": {
@@ -189,11 +199,14 @@ class ASCIIApp:
         self.current_theme = "system"     # оформление по умолчанию
         self.languages = LANGUAGES
         self.themes = THEMES
+        self.root.minsize(600, 400)
         self._build_ui()
         self.apply_theme()
         self.center_window(self.root)
+        # Вызовы для обновления языка
+        self.language_update_callbacks = []
 
-    # для появления окон в центре экрана
+    # Для появления окон в центре экрана
     def center_window(self, window):
         window.update_idletasks()
         width = window.winfo_reqwidth()
@@ -204,7 +217,7 @@ class ASCIIApp:
         y = (screen_height - height) // 2
         window.geometry(f"+{x}+{y}")
 
-    # определение языка системы
+    # Определение языка системы
     def detect_system_language(self):
         try:
             locale.setlocale(locale.LC_ALL, '')
@@ -226,25 +239,49 @@ class ASCIIApp:
     def _build_ui(self):
         effective_lang = self.get_effective_lang()
         self.root.title(self.languages[effective_lang]["main_title"])
-        self.info_label = tk.Label(self.root, text=self.languages[effective_lang]["select_file_prompt"], font=("Arial", 12))
-        self.info_label.pack(pady=20)
-        self.start_button = tk.Button(self.root, text=self.languages[effective_lang]["select_button"],
-                                      font=("Arial", 14), command=self.start_processing)
-        self.start_button.pack(pady=10)
-        self.settings_button = tk.Button(self.root, text=self.languages[effective_lang]["settings_button"],
-                                         command=self.open_settings)
-        self.settings_button.pack(pady=10)
+        # Main frame 
+        main_frame = tk.Frame(self.root, padx=20, pady=20)
+        main_frame.pack(expand=True, fill="both")
+        self.instr_label = tk.Label(main_frame, text=self.languages[effective_lang]["start_text"],
+                                    font=("Arial", 12), justify="left")
+        self.instr_label.pack(pady=10, anchor="w")
+        button_frame = tk.Frame(main_frame)
+        button_frame.pack(pady=20)
+        self.start_button = tk.Button(button_frame, text=self.languages[effective_lang]["select_button"],
+                                      font=("Arial", 14), command=self.start_processing, width=15)
+        self.start_button.grid(row=0, column=0, padx=10)
+        self.settings_button = tk.Button(button_frame, text=self.languages[effective_lang]["settings_button"],
+                                         command=self.open_settings, width=15)
+        self.settings_button.grid(row=0, column=1, padx=10)
 
     # Обновление текста интерфейса
     def update_ui(self):
         effective_lang = self.get_effective_lang()
         self.root.title(self.languages[effective_lang]["main_title"])
-        self.info_label.config(text=self.languages[effective_lang]["select_file_prompt"])
+        self.instr_label.config(text=self.languages[effective_lang]["start_text"])
         self.start_button.config(text=self.languages[effective_lang]["select_button"])
         self.settings_button.config(text=self.languages[effective_lang]["settings_button"])
         self.apply_theme()
 
-    # Применение темы 
+    # Регистрирация вызова для обновления ызка
+    def register_language_update(self, callback, dialog):
+        self.language_update_callbacks.append(callback)
+        def on_destroy(e):
+            if callback in self.language_update_callbacks:
+                self.language_update_callbacks.remove(callback)
+        dialog.bind("<Destroy>", on_destroy)
+
+
+    # Обновление языка во всех текущих окнах
+    def update_all_language_windows(self):
+        for callback in self.language_update_callbacks:
+            callback()
+
+    def set_language(self, lang):
+        self.current_lang = lang
+        self.update_ui()
+        self.update_all_language_windows()
+
     def get_actual_theme(self):
         if self.current_theme == "system":
             detected = darkdetect.theme()
@@ -288,13 +325,48 @@ class ASCIIApp:
         self.apply_theme(dialog)
         self.center_window(dialog)
         colors = self.themes[self.get_actual_theme()]
+        instr = tk.Label(dialog, text=self.languages[effective_lang]["settings_text"],
+                         bg=colors["bg"], fg=colors["fg"], font=("Arial", 10), justify="left")
+        instr.grid(row=0, column=0, columnspan=3, padx=10, pady=5, sticky="w")
+
+        # Обновление текста 
+        def update_dialog():
+            eff_lang = self.get_effective_lang()
+            dialog.title(self.languages[eff_lang]["settings_button"])
+            instr.config(text=self.languages[eff_lang]["settings_text"])
+            lang_label.config(text=self.languages[eff_lang]["language_label"])
+            for code, rb in lang_rbs:
+                if code == "system":
+                    if self.current_lang == "system":
+                        effective_display = "English" if self.get_effective_lang() == "en" else "Русский"
+                        label = f"{self.languages[eff_lang]['system_lang']} ({effective_display})"
+                    else:
+                        label = self.languages[eff_lang]["system_lang"]
+                else:
+                    label = "English" if code == "en" else "Русский"
+                rb.config(text=label)
+            theme_label.config(text=self.languages[eff_lang]["theme_label"])
+            for theme, rb in theme_rbs:
+                if theme == "system":
+                    if self.current_theme == "system":
+                        effective_system = self.get_actual_theme()
+                        label_text = f"{self.languages[eff_lang]['system_theme']} ({self.languages[eff_lang][f'{effective_system}_theme']})"
+                    else:
+                        label_text = self.languages[eff_lang]["system_theme"]
+                else:
+                    label_text = self.languages[eff_lang][f"{theme}_theme"]
+                rb.config(text=label_text)
+            close_button.config(text=self.languages[eff_lang]["close_button"])
+        self.register_language_update(update_dialog, dialog)
 
         # Выбор языка
-        lang_frame = tk.Frame(dialog, bg=colors["bg"])
-        lang_frame.grid(row=0, column=0, columnspan=3, padx=10, pady=5, sticky="w")
-        tk.Label(lang_frame, text=self.languages[effective_lang]["language_label"],
-                 bg=colors["bg"], fg=colors["fg"]).pack(side=tk.LEFT)
+        lang_frame = tk.Frame(dialog, bg=colors["bg"], padx=10, pady=5)
+        lang_frame.grid(row=1, column=0, columnspan=3, sticky="w")
+        lang_label = tk.Label(lang_frame, text=self.languages[effective_lang]["language_label"],
+                              bg=colors["bg"], fg=colors["fg"])
+        lang_label.pack(side=tk.LEFT)
         lang_var = tk.StringVar(value=self.current_lang)
+        lang_rbs = []
         for code, default_name in [("en", "English"), ("ru", "Русский"), ("system", None)]:
             if code == "system":
                 if self.current_lang == "system":
@@ -310,13 +382,16 @@ class ASCIIApp:
                                 selectcolor=colors["entry_bg"],
                                 command=lambda: self.set_language(lang_var.get()))
             rb.pack(side=tk.LEFT, padx=5)
+            lang_rbs.append((code, rb))
 
         # Выбор оформления
-        theme_frame = tk.Frame(dialog, bg=colors["bg"])
-        theme_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=5, sticky="w")
-        tk.Label(theme_frame, text=self.languages[effective_lang]["theme_label"],
-                 bg=colors["bg"], fg=colors["fg"]).pack(side=tk.LEFT)
+        theme_frame = tk.Frame(dialog, bg=colors["bg"], padx=10, pady=5)
+        theme_frame.grid(row=2, column=0, columnspan=3, sticky="w")
+        theme_label = tk.Label(theme_frame, text=self.languages[effective_lang]["theme_label"],
+                               bg=colors["bg"], fg=colors["fg"])
+        theme_label.pack(side=tk.LEFT)
         theme_var = tk.StringVar(value=self.current_theme)
+        theme_rbs = []
         for theme in ["light", "dark", "system"]:
             if theme == "system":
                 if self.current_theme == "system":
@@ -333,15 +408,12 @@ class ASCIIApp:
                                 selectcolor=colors["entry_bg"],
                                 command=lambda: self.set_theme(theme_var.get()))
             rb.pack(side=tk.LEFT, padx=5)
-
+            theme_rbs.append((theme, rb))
+            
         close_button = tk.Button(dialog, text=self.languages[effective_lang]["close_button"],
                                  command=dialog.destroy)
-        close_button.grid(row=2, column=0, columnspan=3, pady=10)
+        close_button.grid(row=3, column=0, columnspan=3, pady=10)
         self.center_window(dialog)
-
-    def set_language(self, lang):
-        self.current_lang = lang
-        self.update_ui()
 
     def set_theme(self, theme):
         self.current_theme = theme
@@ -391,7 +463,7 @@ class ASCIIApp:
         tk.Label(dialog, text=self.languages[effective_lang]["char_custom_label"],
                  bg=colors["bg"], fg=colors["fg"]).pack(pady=10)
         entry = tk.Entry(dialog, bg=colors["entry_bg"], fg=colors["entry_fg"])
-        entry.pack()
+        entry.pack(padx=10)
         error_label = tk.Label(dialog, text="", fg="red", bg=colors["bg"])
         error_label.pack()
         def confirm():
@@ -803,11 +875,11 @@ class ASCIIApp:
         if not ascii_chars:
             return
         if file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.gif')):
-            self.info_label.config(text=self.languages[self.get_effective_lang()]["processing_image"])
+            self.instr_label.config(text=self.languages[self.get_effective_lang()]["processing_image"])
             self.root.update()
             self.handle_image(file_path, ascii_chars)
         else:
-            self.info_label.config(text=self.languages[self.get_effective_lang()]["processing_video"])
+            self.instr_label.config(text=self.languages[self.get_effective_lang()]["processing_video"])
             self.root.update()
             self.handle_video(file_path, audio_path, ascii_chars)
 
