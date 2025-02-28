@@ -72,7 +72,8 @@ LANGUAGES = {
                       "2. Choose one of the presets or make your own chars set(from darkest to lightest).\n"
                       "3. Choose rendering settings. Info button in right bottom corner explains options difference.\n"
                       "4. Wait for render start and receive result. Press ESC to exit while rendering.",
-        "settings_text": "Select your preferred language and theme."
+        "settings_text": "Select your preferred language and theme.",
+        "select_file_prompt": "Select a file"  
     },
     "ru": {
         "main_title": "ASCII трансфер",
@@ -123,7 +124,8 @@ LANGUAGES = {
                       "2. выберите один из готовых или создайте свой набор символов(от тёмного к светлому).\n"
                       "3. Выберите настройки преобразования. Кнопка Инфо в правом нижнем углу объясняет разницу настроек.\n"
                       "4. Дождитесь конца рендера и получите результат. Нажмите ESC во время рендера чтобы выйти.",
-        "settings_text": "Выберите ваш предпочитаемый язык и оформление."
+        "settings_text": "Выберите ваш предпочитаемый язык и оформление.",
+        "select_file_prompt": "Выберите файл" 
     }
 }
 
@@ -263,14 +265,13 @@ class ASCIIApp:
         self.settings_button.config(text=self.languages[effective_lang]["settings_button"])
         self.apply_theme()
 
-    # Регистрирация вызова для обновления ызка
+    # Регистрирация вызова для обновления языка
     def register_language_update(self, callback, dialog):
         self.language_update_callbacks.append(callback)
         def on_destroy(e):
             if callback in self.language_update_callbacks:
                 self.language_update_callbacks.remove(callback)
         dialog.bind("<Destroy>", on_destroy)
-
 
     # Обновление языка во всех текущих окнах
     def update_all_language_windows(self):
@@ -337,22 +338,17 @@ class ASCIIApp:
             lang_label.config(text=self.languages[eff_lang]["language_label"])
             for code, rb in lang_rbs:
                 if code == "system":
-                    if self.current_lang == "system":
-                        effective_display = "English" if self.get_effective_lang() == "en" else "Русский"
-                        label = f"{self.languages[eff_lang]['system_lang']} ({effective_display})"
-                    else:
-                        label = self.languages[eff_lang]["system_lang"]
+                    effective_display = "English" if self.detect_system_language() == "en" else "Русский"
+                    label = f"{self.languages[eff_lang]['system_lang']} ({effective_display})"
                 else:
                     label = "English" if code == "en" else "Русский"
                 rb.config(text=label)
             theme_label.config(text=self.languages[eff_lang]["theme_label"])
             for theme, rb in theme_rbs:
                 if theme == "system":
-                    if self.current_theme == "system":
-                        effective_system = self.get_actual_theme()
-                        label_text = f"{self.languages[eff_lang]['system_theme']} ({self.languages[eff_lang][f'{effective_system}_theme']})"
-                    else:
-                        label_text = self.languages[eff_lang]["system_theme"]
+                    detected = darkdetect.theme()
+                    system_effective = detected.lower() if detected in ["Light", "Dark"] else "light"
+                    label_text = f"{self.languages[eff_lang]['system_theme']} ({self.languages[eff_lang][f'{system_effective}_theme']})"
                 else:
                     label_text = self.languages[eff_lang][f"{theme}_theme"]
                 rb.config(text=label_text)
@@ -369,11 +365,8 @@ class ASCIIApp:
         lang_rbs = []
         for code, default_name in [("en", "English"), ("ru", "Русский"), ("system", None)]:
             if code == "system":
-                if self.current_lang == "system":
-                    effective_display = "English" if self.get_effective_lang() == "en" else "Русский"
-                    label = f"{self.languages[effective_lang]['system_lang']} ({effective_display})"
-                else:
-                    label = self.languages[effective_lang]["system_lang"]
+                effective_display = "English" if self.detect_system_language() == "en" else "Русский"
+                label = f"{self.languages[effective_lang]['system_lang']} ({effective_display})"
             else:
                 label = default_name
             rb = tk.Radiobutton(lang_frame, text=label, variable=lang_var, value=code,
@@ -394,11 +387,9 @@ class ASCIIApp:
         theme_rbs = []
         for theme in ["light", "dark", "system"]:
             if theme == "system":
-                if self.current_theme == "system":
-                    effective_system = self.get_actual_theme()  
-                    label_text = f"{self.languages[effective_lang]['system_theme']} ({self.languages[effective_lang][f'{effective_system}_theme']})"
-                else:
-                    label_text = self.languages[effective_lang]["system_theme"]
+                detected = darkdetect.theme()
+                system_effective = detected.lower() if detected in ["Light", "Dark"] else "light"
+                label_text = f"{self.languages[effective_lang]['system_theme']} ({self.languages[effective_lang][f'{system_effective}_theme']})"
             else:
                 label_text = self.languages[effective_lang][f"{theme}_theme"]
             rb = tk.Radiobutton(theme_frame, text=label_text,
@@ -482,7 +473,7 @@ class ASCIIApp:
         return selected_chars
 
     # Настройки шрифта и режима отображения/рендеринга
-    def get_font_settings(self, include_cpu_options=True):
+    def rendering_settings(self, video_options=True):
         effective_lang = self.get_effective_lang()
         result = None
         dialog = tk.Toplevel(self.root)
@@ -490,7 +481,7 @@ class ASCIIApp:
         colors = self.themes[self.get_actual_theme()]
         self.apply_theme(dialog)
         self.center_window(dialog)
-        sizes = FONT_SIZES if include_cpu_options else [1] + FONT_SIZES
+        sizes = FONT_SIZES if video_options else [1] + FONT_SIZES
         tk.Label(dialog, text=self.languages[effective_lang]["font_size_label"],
                  bg=colors["bg"], fg=colors["fg"]).grid(row=0, column=0, padx=10, pady=5, sticky="w")
         size_var = tk.IntVar(value=10)
@@ -504,7 +495,7 @@ class ASCIIApp:
         current_row = 1
 
         # Опции для видео
-        if include_cpu_options:
+        if video_options:
             tk.Label(dialog, text=self.languages[effective_lang]["cpu_mode_label"],
                      bg=colors["bg"], fg=colors["fg"]).grid(row=current_row, column=0, padx=10, pady=5, sticky="w")
             cpu_mode_var = tk.StringVar(value="balanced")
@@ -570,6 +561,7 @@ class ASCIIApp:
             current_row += 1
             result = (size_var.get(), image_mode_var.get(), save_image_var.get())
 
+        # Кастом текст для Инфо
         def show_custom_message(title, message):
             msg_win = tk.Toplevel(dialog)
             msg_win.title(title)
@@ -581,14 +573,14 @@ class ASCIIApp:
             msg_win.grab_set()
             dialog.wait_window(msg_win)
         def show_info():
-            key = "video" if include_cpu_options else "image"
+            key = "video" if video_options else "image"
             info_text = INFO_MESSAGES[key][effective_lang]
             show_custom_message(self.languages[effective_lang]["info_button"], info_text)
         bottom_frame = tk.Frame(dialog, bg=colors["bg"])
         bottom_frame.grid(row=current_row, column=0, columnspan=len(sizes)+1, sticky="ew", pady=10)
         def on_select():
             nonlocal result
-            if include_cpu_options:
+            if video_options:
                 result = (size_var.get(), cpu_mode_var.get(), video_render_var.get(), play_audio_var.get())
             else:
                 result = (size_var.get(), image_mode_var.get(), save_image_var.get())
@@ -612,7 +604,7 @@ class ASCIIApp:
     # Обработка изображения
     def handle_image(self, image_path, ascii_chars):
         effective_lang = self.get_effective_lang()
-        settings = self.get_font_settings(include_cpu_options=False)
+        settings = self.rendering_settings(video_options=False)
         if settings is None:
             return
         font_size, image_mode, save_image = settings
@@ -678,7 +670,7 @@ class ASCIIApp:
         try:
             pygame.init()
             pygame.font.init()
-            settings = self.get_font_settings(include_cpu_options=True)
+            settings = self.rendering_settings(video_options=True)
             if settings is None:
                 return
             font_size, cpu_mode, video_render_mode, play_audio = settings
