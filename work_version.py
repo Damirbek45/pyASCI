@@ -16,15 +16,15 @@ import moviepy as mp
 
 # Глобальные переменные
 DEFAULT = " .:-=+*#%@"
-DETAILED = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+DETAILED = " .`'!|,\"\\;:lji-trf1][I)(}{\\/~zyxvseca_^>=<*uqponkhgdb?+J532YTLF40wZXSEC96mURQPOKGDA8NHB&#M%W$@"
 MINIMUM = " .oO@"
 FRAME_UPDATE = 150  # каждые 150 кадров, можно изменить
 FONT_SIZES = [3, 5, 10, 15, 20, 25, 30]  # размеры шрифта
 
-# Локализация (языки)
+# Локализация (языки) 
 LANGUAGES = {
     "en": {
-        "main_title": "ASCII Transfer",
+        "main_title": "pyASCI",
         "select_button": "Select",
         "settings_button": "Settings",
         "char_dialog_title": "Character Selection",
@@ -69,14 +69,40 @@ LANGUAGES = {
         "error_occurred": "An error occurred: {error}",
         "start_text": "Welcome to pyASCI!\n\n"
                       "1. Click 'Select' to choose an image or video file for conversion.\n"
-                      "2. Choose one of the presets or make your own chars set(from darkest to lightest).\n"
+                      "2. Choose one of the presets or make your own chars set (from darkest to lightest).\n"
                       "3. Choose rendering settings. Info button in right bottom corner explains options difference.\n"
                       "4. Wait for render start and receive result. Press ESC to exit while rendering.",
         "settings_text": "Select your preferred language and theme.",
-        "select_file_prompt": "Select a file"  
+        "select_file_prompt": "Select a file",
+        "info": {
+            "video": (
+                "Font Size: Sets the size of the characters (the less – the better details, but loads longer).\n\n"
+                "CPU Mode:\n"
+                " - High: Minimal loading, high CPU usage. Recommended for modern PC.\n"
+                " - Balanced: Balanced performance and CPU usage.\n"
+                " - Low: More loading, lower CPU usage. Recommended for old PC.\n\n"
+                "Video Render Mode:\n"
+                " - Real Time Render: Starts a video immediately and renders it on the fly. Works better for modern PC.\n"
+                " - Pre-render: Processes all frames before start.\n\n"
+                "Press ESC to exit while loading/after rendering."
+            ),
+            "image": (
+                "Font Size: Sets the size of the characters (the less – the better details).\n\n"
+                "Image Display mode:\n"
+                " - Keep Resolution: Uses the original image resolution.\n"
+                " - Stretch to Full Screen: Scales image to full screen.\n\n"
+                "Press ESC to exit while loading/after rendering."
+            ),
+            "char": (
+                "Presets:\n"
+                "Default: 10 characters, all-round option.\n"
+                "Detailed: All printable text from ASCII table, better for detailed rendering.(Warning:with small font sizes spends a lot of PC resources)\n"
+                "Minimum: 5 characters, very small light recognition. Better for minimalistic render."
+            )
+        }
     },
     "ru": {
-        "main_title": "ASCII трансфер",
+        "main_title": "pyASCI",
         "select_button": "Выбрать",
         "settings_button": "Настройки",
         "char_dialog_title": "Выбор символов",
@@ -117,15 +143,41 @@ LANGUAGES = {
         "audio_error": "Ошибка аудио",
         "audio_extraction_error": "Ошибка извлечения аудио: {error}",
         "audio_error_msg": "Ошибка аудио: {error}",
-        "no_frames_error": "Не было пред-рендеренных кадров. Проверьте видеофайл.",
+        "no_frames_error": "Кадры не смогли прорендерится. Проверьте видеофайл.",
         "error_occurred": "Произошла ошибка: {error}",
         "start_text": "Добро пожаловать в pyASCI!\n\n"
                       "1. Нажмите 'Выбрать', чтобы выбрать файл (изображение или видео) для преобразования.\n"
-                      "2. выберите один из готовых или создайте свой набор символов(от тёмного к светлому).\n"
+                      "2. Выберите один из готовых пресетов или создайте свой набор символов (от тёмного к светлому).\n"
                       "3. Выберите настройки преобразования. Кнопка Инфо в правом нижнем углу объясняет разницу настроек.\n"
                       "4. Дождитесь конца рендера и получите результат. Нажмите ESC во время рендера чтобы выйти.",
         "settings_text": "Выберите ваш предпочитаемый язык и оформление.",
-        "select_file_prompt": "Выберите файл" 
+        "select_file_prompt": "Выберите файл",
+        "info": {
+            "video": (
+                "Размер шрифта: устанавливает размер символов (меньше – более детализированно, но медленная загрузка).\n\n"
+                "Режим ЦП:\n"
+                " - Максимальная нагрузка: минимальная загрузка, высокая нагрузка ЦП. Рекомендуется для современных ПК.\n"
+                " - Баланс: сбалансированное соотношение загрузки и нагрузки ЦП.\n"
+                " - Экономия ресурсов: долгая загрузка, низкая нагрузка ЦП. Рекомендуется для старых ПК.\n\n"
+                "Режим рендеринга видео:\n"
+                " - Рендер в реальном времени: запускает видео сразу и обрабатывает кадры на лету. Работает лучше для современных компьютеров.\n"
+                " - Предварительный рендер: обрабатывает все кадры перед запуском.\n\n"
+                "Нажмите ESC для выхода во время рендера/после него."
+            ),
+            "image": (
+                "Размер шрифта: устанавливает размер символов (меньше – более детализированно).\n\n"
+                "Режим показа изображения:\n"
+                " - Оригинальный размер: использует оригинальное разрешение изображения.\n"
+                " - Растянуть на весь экран: масштабирует изображение на весь экран.\n\n"
+                "Нажмите ESC для выхода после рендера."
+            ),
+            "char": (
+                "Пресеты:\n"
+                "Обычный: 10 символов, универсальная опция.\n"
+                "Расширенный: Все символы из ASCII таблицы которые можно вывести, подходит для детального рендеринга.(Предупреждение:с низким размером шрифта тратит очень много ресурсов ПК)\n"
+                "Минимальный: 5 символов, низкое различение цвета. Подходит для минималистичного рендера."
+            )
+        }
     }
 }
 
@@ -147,50 +199,6 @@ THEMES = {
         "entry_bg": "#202020",
         "entry_fg": "white",
     },
-}
-
-# Текст в Info
-INFO_MESSAGES = {
-    "video": {
-        "en": (
-            "Font Size: Sets the size of the characters (the less – the better details, but loads longer).\n\n"
-            "CPU Mode:\n"
-            " - High: Minimal loading, high CPU usage. Recommended for modern PC.\n"
-            " - Balanced: Balanced performance and CPU usage.\n"
-            " - Low: More loading, lower CPU usage. Recommended for old PC.\n\n"
-            "Video Render Mode:\n"
-            " - Real Time Render: Starts a video immediately and renders it on the fly. Works better for modern PC.\n"
-            " - Pre-render: Processes all frames before start.\n\n"
-            "Press ESC to exit while loading/after rendering."
-        ),
-        "ru": (
-            "Размер шрифта: устанавливает размер символов (меньше – более детализированно, но медленная загрузка).\n\n"
-            "Режим ЦП:\n"
-            " - Максимальная нагрузка: минимальная загрузка, высокая нагрузка ЦП. Рекомендуется для современных ПК.\n"
-            " - Баланс: сбалансированное соотношение загрузки и нагрузки ЦП.\n"
-            " - Экономия ресурсов: долгая загрузка, низкая нагрузка ЦП. Рекомендуется для старых ПК.\n\n"
-            "Режим рендеринга видео:\n"
-            " - Рендер в реальном времени: запускает видео сразу и обрабатывает кадры на лету. Работает лучше для современных компьютеров.\n"
-            " - Предварительный рендер: обрабатывает все кадры перед запуском.\n\n"
-            "Нажмите ESC для выхода во время рендера/после него."
-        )
-    },
-    "image": {
-        "en": (
-            "Font Size: Sets the size of the characters (the less – the better details).\n\n"
-            "Image Display mode:\n"
-            " - Keep Resolution: Uses the original image resolution.\n"
-            " - Stretch to Full Screen: Scales image to full screen.\n\n"
-            "Press ESC to exit while loading/after rendering."
-        ),
-        "ru": (
-            "Размер шрифта: устанавливает размер символов (меньше – более детализированно).\n\n"
-            "Режим показа изображения:\n"
-            " - Оригинальный размер: использует оригинальное разрешение изображения.\n"
-            " - Растянуть на весь экран: масштабирует изображение на весь экран.\n\n"
-            "Нажмите ESC для выхода после рендеринга."
-        )
-    }
 }
 
 # Основной класс приложения
@@ -265,7 +273,7 @@ class ASCIIApp:
         self.settings_button.config(text=self.languages[effective_lang]["settings_button"])
         self.apply_theme()
 
-    # Регистрирация вызова для обновления языка
+    # Регистрация вызова для обновления языка
     def register_language_update(self, callback, dialog):
         self.language_update_callbacks.append(callback)
         def on_destroy(e):
@@ -465,8 +473,26 @@ class ASCIIApp:
                 dialog.destroy()
             else:
                 error_label.config(text=self.languages[effective_lang]["char_error_msg"])
-        tk.Button(dialog, text="OK", command=confirm,
-                  bg=colors["button_bg"], fg=colors["button_fg"]).pack(pady=10)
+        # Инфо в выборе символов
+        bottom_frame = tk.Frame(dialog, bg=colors["bg"])
+        bottom_frame.pack(pady=10, fill="x")
+        def show_custom_message(title, message):
+            msg_win = tk.Toplevel(dialog)
+            msg_win.title(title)
+            self.apply_theme(msg_win)
+            self.center_window(msg_win)
+            tk.Label(msg_win, text=message, bg=colors["bg"], fg=colors["fg"], wraplength=400).pack(padx=20, pady=20)
+            tk.Button(msg_win, text="OK", command=msg_win.destroy,
+                      bg=colors["button_bg"], fg=colors["button_fg"]).pack(pady=(0,20))
+            msg_win.grab_set()
+            dialog.wait_window(msg_win)
+        char_info = self.languages[effective_lang]["info"]["char"]
+        info_button = tk.Button(bottom_frame, text=self.languages[effective_lang]["info_button"],
+                                command=lambda: show_custom_message(self.languages[effective_lang]["info_button"], char_info),
+                                bg=colors["button_bg"], fg=colors["button_fg"])
+        info_button.pack(side=tk.RIGHT, padx=10)
+        tk.Button(bottom_frame, text="OK", command=confirm,
+                  bg=colors["button_bg"], fg=colors["button_fg"]).pack(side=tk.LEFT, padx=10)
         dialog.transient(self.root)
         dialog.grab_set()
         self.root.wait_window(dialog)
@@ -574,7 +600,7 @@ class ASCIIApp:
             dialog.wait_window(msg_win)
         def show_info():
             key = "video" if video_options else "image"
-            info_text = INFO_MESSAGES[key][effective_lang]
+            info_text = self.languages[effective_lang]["info"][key]
             show_custom_message(self.languages[effective_lang]["info_button"], info_text)
         bottom_frame = tk.Frame(dialog, bg=colors["bg"])
         bottom_frame.grid(row=current_row, column=0, columnspan=len(sizes)+1, sticky="ew", pady=10)
@@ -632,7 +658,7 @@ class ASCIIApp:
                 cols = screen_width // char_width
                 rows = screen_height // char_height
             resized = cv2.resize(gray, (cols, rows), interpolation=cv2.INTER_NEAREST)
-            # Рендер символов
+            # LUT + Рендер символов
             lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
             ascii_indices = lut[resized]
             ascii_array = list(ascii_chars)
@@ -699,7 +725,7 @@ class ASCIIApp:
                     except Exception as e:
                         messagebox.showerror(self.languages[effective_lang]["audio_error"],
                                              self.languages[effective_lang]["audio_extraction_error"].format(error=e))
-            # LUT для конвертации
+            # LUT 
             lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
             ascii_list = list(ascii_chars)
             # Преобразование в ASCII
@@ -713,7 +739,6 @@ class ASCIIApp:
                         gpu_resized = cv2.cuda.resize(gpu_gray, output_size, interpolation=cv2.INTER_NEAREST)
                         gray = gpu_resized.download()
                     except Exception as e:
-                        # если ошибка - обычный рендер
                         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                         gray = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
                 else:
@@ -728,7 +753,6 @@ class ASCIIApp:
                 if fps <= 0:
                     fps = 30 # фпс по умолчанию
                 frames, timestamps = [], []
-                # ивент если нажать ESC во время загрузки(предотвращает ошибку)
                 cancel_pre_render = threading.Event()
                 def show_progress_bar(progress, total):
                     screen.fill((0, 0, 0))
@@ -745,8 +769,6 @@ class ASCIIApp:
                     pygame.draw.rect(screen, (255, 255, 255), (x, y, bar_width, bar_height), 2)
                     pygame.draw.rect(screen, (255, 255, 255), (x, y, int((progress / total) * bar_width), bar_height))
                     pygame.display.flip()
-
-                # Обработка кадров
                 def render_frames():
                     delay = 0 if cpu_mode == "high" else (0.01 if cpu_mode == "balanced" else 0.05)
                     futures = []
@@ -757,7 +779,6 @@ class ASCIIApp:
                             ret, frame = cap.read()
                             if not ret:
                                 break
-                            # Параллельное преобразование(thread)
                             futures.append(executor.submit(frame_to_ascii, frame))
                             timestamps.append(i / fps)
                             if i % FRAME_UPDATE == 0:
@@ -774,13 +795,11 @@ class ASCIIApp:
                             cancel_pre_render.set()
                     time.sleep(0.2)
                 render_thread.join()
-                # закрытие во время пре-рендера
                 if cancel_pre_render.is_set():
                     cap.release()
                     pygame.quit()
                     return
                 cap.release()
-                # Проверка обработки
                 if not frames:
                     messagebox.showerror(self.languages[effective_lang]["error"],
                                          self.languages[effective_lang]["no_frames_error"])
@@ -805,14 +824,14 @@ class ASCIIApp:
                             break
                     screen.fill((0, 0, 0))
                     elapsed = time.time() - start_time
-                    # Индекс кадра по времени и fps для синхрониации
                     current_frame_index = int(elapsed * fps)
                     if current_frame_index >= len(frames):
                         start_time = time.time()
                         current_frame_index = 0
                     ascii_frame = frames[current_frame_index]
                     for y, line in enumerate(ascii_frame):
-                        screen.blit(font.render(line, True, (255, 255, 255)), (0, y * char_height))
+                        text_surface = font.render(line, True, (255, 255, 255))
+                        screen.blit(text_surface, (0, y * char_height))
                     pygame.display.flip()
                     clock.tick(60)
             else:
@@ -847,10 +866,9 @@ class ASCIIApp:
                     for y, line in enumerate(ascii_frame):
                         screen.blit(font.render(line, True, (255, 255, 255)), (0, y * char_height))
                     pygame.display.flip()
-                    pygame.time.Clock().tick(120) # 120 фпс лок
+                    pygame.time.Clock().tick(120)  # 120 фпс лок
                 cap.release()
             pygame.quit()
-            # Удалить аудио после воспроизведения
             if temp_audio_file and os.path.exists(temp_audio_file):
                 os.remove(temp_audio_file)
         except Exception as e:
