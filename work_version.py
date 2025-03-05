@@ -21,7 +21,7 @@ MINIMUM = " .oO@"
 FRAME_UPDATE = 150  # каждые 150 кадров, можно изменить
 FONT_SIZES = [3, 5, 10, 15, 20, 25, 30]  # размеры шрифта
 
-# Локализация (языки) 
+# Локализация (языки)
 LANGUAGES = {
     "en": {
         "main_title": "pyASCI",
@@ -31,6 +31,7 @@ LANGUAGES = {
         "char_preset_label": "Choose preset:",
         "char_custom_label": "Custom (min 2 chars, from dark to light):",
         "char_error_msg": "Please enter at least 2 characters",
+        "char_example": 'Example: " .:#@"',
         "font_dialog_title": "Font Settings",
         "font_size_label": "Font Size:",
         "processing_image": "Image selected. Choose an options.",
@@ -54,11 +55,14 @@ LANGUAGES = {
         "keep_resolution": "Keep Resolution",
         "stretch_full": "Stretch to Full Screen",
         "real_time": "Real Time Render",
+        "reverse_charset": "Reverse charset",
+        "frame_counter": "Frame counter",
         "pre_render": "Pre-render",
         "info_button": "Info",
         "save_image": "Save image after exiting",
         "play_audio": "Play audio with video",
         "loading_text": "Loading",
+        "frame_counter": "Frame",
         "error": "Error",
         "failed_load_image": "Failed to load image.",
         "failed_open_video": "Failed to open video.",
@@ -82,22 +86,23 @@ LANGUAGES = {
                 " - Balanced: Balanced performance and CPU usage.\n"
                 " - Low: More loading, lower CPU usage. Recommended for old PC.\n\n"
                 "Video Render Mode:\n"
-                " - Real Time Render: Starts a video immediately and renders it on the fly. Works better for modern PC.\n"
+                " - Real Time Render: Starts a video immediately and renders it on the fly.\n"
                 " - Pre-render: Processes all frames before start.\n\n"
+                "Frame counter: Overlays the current frame number on the video if enabled.\n\n"
                 "Press ESC to exit while loading/after rendering."
             ),
             "image": (
                 "Font Size: Sets the size of the characters (the less – the better details).\n\n"
-                "Image Display mode:\n"
-                " - Keep Resolution: Uses the original image resolution.\n"
+                "Image Display Mode:\n"
+                " - Keep Resolution: Uses the original image resolution and centers it on full screen.\n"
                 " - Stretch to Full Screen: Scales image to full screen.\n\n"
                 "Press ESC to exit while loading/after rendering."
             ),
             "char": (
                 "Presets:\n"
                 "Default: 10 characters, all-round option.\n"
-                "Detailed: All printable text from ASCII table, better for detailed rendering.(Warning:with small font sizes spends a lot of PC resources)\n"
-                "Minimum: 5 characters, very small light recognition. Better for minimalistic render."
+                "Detailed: All printable ASCII characters, better for detailed rendering. (Warning: with small font sizes uses more resources.)\n"
+                "Minimum: 5 characters, minimal recognition. Better for minimalist render."
             )
         }
     },
@@ -109,6 +114,7 @@ LANGUAGES = {
         "char_preset_label": "Пресеты:",
         "char_custom_label": "Своя палитра (мин. 2, от тёмного к светлому):",
         "char_error_msg": "Введите не менее 2 символов",
+        "char_example": 'Пример: " .:#@"',
         "font_dialog_title": "Настройки шрифта",
         "font_size_label": "Размер шрифта:",
         "processing_image": "Изображение выбрано. Выберите настройки рендера.",
@@ -133,17 +139,20 @@ LANGUAGES = {
         "stretch_full": "Растянуть на весь экран",
         "real_time": "Рендер в реальном времени",
         "pre_render": "Предварительный рендер",
+        "reverse_charset": "Инвертировать набор символов",
+        "frame_counter": "Счётчик кадров",
         "info_button": "Инфо",
         "save_image": "Сохранить изображение после выхода",
         "play_audio": "Воспроизводить аудио вместе с видео",
         "loading_text": "Загрузка",
+        "frame_counter": "Кадр",
         "error": "Ошибка",
         "failed_load_image": "Не удалось загрузить изображение.",
         "failed_open_video": "Не удалось открыть видео.",
         "audio_error": "Ошибка аудио",
         "audio_extraction_error": "Ошибка извлечения аудио: {error}",
         "audio_error_msg": "Ошибка аудио: {error}",
-        "no_frames_error": "Кадры не смогли прорендерится. Проверьте видеофайл.",
+        "no_frames_error": "Кадры не смогли прорендериться. Проверьте видеофайл.",
         "error_occurred": "Произошла ошибка: {error}",
         "start_text": "Добро пожаловать в pyASCI!\n\n"
                       "1. Нажмите 'Выбрать', чтобы выбрать файл (изображение или видео) для преобразования.\n"
@@ -160,22 +169,23 @@ LANGUAGES = {
                 " - Баланс: сбалансированное соотношение загрузки и нагрузки ЦП.\n"
                 " - Экономия ресурсов: долгая загрузка, низкая нагрузка ЦП. Рекомендуется для старых ПК.\n\n"
                 "Режим рендеринга видео:\n"
-                " - Рендер в реальном времени: запускает видео сразу и обрабатывает кадры на лету. Работает лучше для современных компьютеров.\n"
+                " - Рендер в реальном времени: запускает видео сразу и обрабатывает кадры на лету.\n"
                 " - Предварительный рендер: обрабатывает все кадры перед запуском.\n\n"
+                "Счётчик кадров: накладывает номер текущего кадра на видео, если включён.\n\n"
                 "Нажмите ESC для выхода во время рендера/после него."
             ),
             "image": (
                 "Размер шрифта: устанавливает размер символов (меньше – более детализированно).\n\n"
-                "Режим показа изображения:\n"
-                " - Оригинальный размер: использует оригинальное разрешение изображения.\n"
-                " - Растянуть на весь экран: масштабирует изображение на весь экран.\n\n"
+                "Режим отображения изображения:\n"
+                " - Оригинальный размер: используется исходное разрешение изображения, а результат центрируется на полном экране.\n"
+                " - Растянуть на весь экран: изображение масштабируется на весь экран.\n\n"
                 "Нажмите ESC для выхода после рендера."
             ),
             "char": (
                 "Пресеты:\n"
                 "Обычный: 10 символов, универсальная опция.\n"
-                "Расширенный: Все символы из ASCII таблицы которые можно вывести, подходит для детального рендеринга.(Предупреждение:с низким размером шрифта тратит очень много ресурсов ПК)\n"
-                "Минимальный: 5 символов, низкое различение цвета. Подходит для минималистичного рендера."
+                "Расширенный: Все символы из ASCII таблицы, подходит для детального рендеринга (при маленьком размере шрифта потребляет много ресурсов).\n"
+                "Минимальный: 5 символов, низкое различение цвета, подходит для минималистичного рендера."
             )
         }
     }
@@ -338,7 +348,6 @@ class ASCIIApp:
                          bg=colors["bg"], fg=colors["fg"], font=("Arial", 10), justify="left")
         instr.grid(row=0, column=0, columnspan=3, padx=10, pady=5, sticky="w")
 
-        # Обновление текста 
         def update_dialog():
             eff_lang = self.get_effective_lang()
             dialog.title(self.languages[eff_lang]["settings_button"])
@@ -423,7 +432,7 @@ class ASCIIApp:
         effective_lang = self.get_effective_lang()
         file_path = filedialog.askopenfilename(
             title=self.languages[effective_lang]["select_file_prompt"],
-            filetypes=[ # Расширения файлов
+            filetypes=[  # Расширения файлов
                 ("Video", "*.mp4 *.webm *.avi *.mkv *.mov"),
                 ("Image", "*.jpg *.jpeg *.png *.bmp *.gif"),
                 ("All Files", "*.*")
@@ -463,6 +472,8 @@ class ASCIIApp:
                  bg=colors["bg"], fg=colors["fg"]).pack(pady=10)
         entry = tk.Entry(dialog, bg=colors["entry_bg"], fg=colors["entry_fg"])
         entry.pack(padx=10)
+        tk.Label(dialog, text=self.languages[effective_lang].get("char_example", 'Example: " .:#@"'),
+                 bg=colors["bg"], fg=colors["fg"]).pack(pady=5)
         error_label = tk.Label(dialog, text="", fg="red", bg=colors["bg"])
         error_label.pack()
         def confirm():
@@ -473,9 +484,9 @@ class ASCIIApp:
                 dialog.destroy()
             else:
                 error_label.config(text=self.languages[effective_lang]["char_error_msg"])
-        # Инфо в выборе символов
         bottom_frame = tk.Frame(dialog, bg=colors["bg"])
         bottom_frame.pack(pady=10, fill="x")
+        
         def show_custom_message(title, message):
             msg_win = tk.Toplevel(dialog)
             msg_win.title(title)
@@ -520,7 +531,6 @@ class ASCIIApp:
             dialog.grid_columnconfigure(col, weight=1)
         current_row = 1
 
-        # Опции для видео
         if video_options:
             tk.Label(dialog, text=self.languages[effective_lang]["cpu_mode_label"],
                      bg=colors["bg"], fg=colors["fg"]).grid(row=current_row, column=0, padx=10, pady=5, sticky="w")
@@ -561,9 +571,18 @@ class ASCIIApp:
                                 selectcolor=colors["entry_bg"])
             cb.grid(row=current_row, column=0, columnspan=3, padx=10, pady=5, sticky="w")
             current_row += 1
-            result = (size_var.get(), cpu_mode_var.get(), video_render_var.get(), play_audio_var.get())
+            reverse_charset_var = tk.BooleanVar(value=False)
+            tk.Checkbutton(dialog, text=self.languages[effective_lang]["reverse_charset"],
+                           variable=reverse_charset_var, bg=colors["bg"], fg=colors["fg"],
+                           selectcolor=colors["entry_bg"]).grid(row=current_row, column=0, columnspan=3, padx=10, pady=5, sticky="w")
+            current_row += 1
+            frame_counter_var = tk.BooleanVar(value=False)
+            tk.Checkbutton(dialog, text=self.languages[effective_lang]["frame_counter"],
+                           variable=frame_counter_var, bg=colors["bg"], fg=colors["fg"],
+                           selectcolor=colors["entry_bg"]).grid(row=current_row, column=0, columnspan=3, padx=10, pady=5, sticky="w")
+            current_row += 1
+            result = (size_var.get(), cpu_mode_var.get(), video_render_var.get(), play_audio_var.get(), reverse_charset_var.get(), frame_counter_var.get())
         else:
-            # Опции для изображения
             tk.Label(dialog, text=self.languages[effective_lang]["image_mode_label"],
                      bg=colors["bg"], fg=colors["fg"]).grid(row=current_row, column=0, padx=10, pady=5, sticky="w")
             image_mode_var = tk.StringVar(value="stretch")
@@ -585,9 +604,12 @@ class ASCIIApp:
                            variable=save_image_var, bg=colors["bg"], fg=colors["fg"],
                            selectcolor=colors["entry_bg"]).pack(side=tk.LEFT)
             current_row += 1
-            result = (size_var.get(), image_mode_var.get(), save_image_var.get())
-
-        # Кастом текст для Инфо
+            reverse_charset_var = tk.BooleanVar(value=False)
+            tk.Checkbutton(dialog, text=self.languages[effective_lang]["reverse_charset"],
+                           variable=reverse_charset_var, bg=colors["bg"], fg=colors["fg"],
+                           selectcolor=colors["entry_bg"]).grid(row=current_row, column=0, columnspan=3, padx=10, pady=5, sticky="w")
+            current_row += 1
+            result = (size_var.get(), image_mode_var.get(), save_image_var.get(), reverse_charset_var.get())
         def show_custom_message(title, message):
             msg_win = tk.Toplevel(dialog)
             msg_win.title(title)
@@ -598,6 +620,8 @@ class ASCIIApp:
                       bg=colors["button_bg"], fg=colors["button_fg"]).pack(pady=(0,20))
             msg_win.grab_set()
             dialog.wait_window(msg_win)
+
+        # Инфо для настроек рендера
         def show_info():
             key = "video" if video_options else "image"
             info_text = self.languages[effective_lang]["info"][key]
@@ -607,9 +631,9 @@ class ASCIIApp:
         def on_select():
             nonlocal result
             if video_options:
-                result = (size_var.get(), cpu_mode_var.get(), video_render_var.get(), play_audio_var.get())
+                result = (size_var.get(), cpu_mode_var.get(), video_render_var.get(), play_audio_var.get(), reverse_charset_var.get(), frame_counter_var.get())
             else:
-                result = (size_var.get(), image_mode_var.get(), save_image_var.get())
+                result = (size_var.get(), image_mode_var.get(), save_image_var.get(), reverse_charset_var.get())
             dialog.destroy()
         select_button = tk.Button(bottom_frame, text=self.languages[effective_lang]["select_button"],
                                   command=on_select, bg=colors["button_bg"], fg=colors["button_fg"])
@@ -627,46 +651,52 @@ class ASCIIApp:
         self.root.wait_window(dialog)
         return result
 
-    # Обработка изображения
+    # Обработка изображения 
     def handle_image(self, image_path, ascii_chars):
         effective_lang = self.get_effective_lang()
         settings = self.rendering_settings(video_options=False)
         if settings is None:
             return
-        font_size, image_mode, save_image = settings
+        # Настройки для изображения
+        font_size, image_mode, save_image, reverse_charset = settings
         try:
             pygame.init()
             img = cv2.imread(image_path)
             if img is None:
-                messagebox.showerror(self.languages[effective_lang]["error"], self.languages[effective_lang]["failed_load_image"])
+                messagebox.showerror(self.languages[effective_lang]["error"],
+                                     self.languages[effective_lang]["failed_load_image"])
                 pygame.quit()
                 return
-            # Запуск
             screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
             screen_width, screen_height = screen.get_size()
             pygame.display.set_caption("Image")
             font = pygame.font.SysFont("Courier", font_size)
             char_width, char_height = font.size("A")
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            # Оригинальное разрешение
+
+            # Сохранение разрешения/ полный экран
             if image_mode == "keep":
                 img_height, img_width = gray.shape
                 cols = img_width // char_width
                 rows = img_height // char_height
-            # Полный экран
             else:
                 cols = screen_width // char_width
                 rows = screen_height // char_height
             resized = cv2.resize(gray, (cols, rows), interpolation=cv2.INTER_NEAREST)
-            # LUT + Рендер символов
             lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
+            mapping_chars = list(ascii_chars[::-1]) if reverse_charset else list(ascii_chars)
             ascii_indices = lut[resized]
-            ascii_array = list(ascii_chars)
-            ascii_image = [''.join(ascii_array[pixel] for pixel in row) for row in ascii_indices]
+            ascii_image = [''.join(mapping_chars[pixel] for pixel in row) for row in ascii_indices]
+            render_width = cols * char_width
+            render_height = rows * char_height
+            x_offset = (screen_width - render_width) // 2
+            y_offset = (screen_height - render_height) // 2
+            thumb_width, thumb_height = 160, 120
             running = True
             while running:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                        # Сохранение изображения
                         if save_image:
                             save_path = filedialog.asksaveasfilename(defaultextension=".png",
                                                                      filetypes=[("PNG Image", "*.png")])
@@ -674,10 +704,6 @@ class ASCIIApp:
                                 pygame.image.save(screen, save_path)
                         running = False
                 screen.fill((0, 0, 0))
-                render_width = cols * char_width
-                render_height = rows * char_height
-                x_offset = (screen_width - render_width) // 2
-                y_offset = (screen_height - render_height) // 2
                 y_pos = y_offset
                 for line in ascii_image:
                     text_surface = font.render(line, True, (255, 255, 255))
@@ -690,7 +716,7 @@ class ASCIIApp:
                                  self.languages[effective_lang]["error_occurred"].format(error=e))
             pygame.quit()
 
-    # Обработка видео
+    # Обработка видео 
     def handle_video(self, video_path, audio_path, ascii_chars):
         effective_lang = self.get_effective_lang()
         try:
@@ -699,22 +725,22 @@ class ASCIIApp:
             settings = self.rendering_settings(video_options=True)
             if settings is None:
                 return
-            font_size, cpu_mode, video_render_mode, play_audio = settings
+            # Настройки для видео
+            font_size, cpu_mode, video_render_mode, play_audio, reverse_charset, frame_counter = settings
             cap = cv2.VideoCapture(video_path)
             if not cap.isOpened():
                 messagebox.showerror(self.languages[effective_lang]["error"],
                                      self.languages[effective_lang]["failed_open_video"])
                 pygame.quit()
                 return
-            # Запуск 
             screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
             screen_width, screen_height = screen.get_size()
             pygame.display.set_caption("Video")
             font = pygame.font.SysFont("Courier", font_size)
             char_width, char_height = font.size("A")
             output_size = (screen_width // char_width, screen_height // char_height)
-            # Извлечение аудио из видео
             temp_audio_file = None
+            # Создание временного мп3 файла для аудио
             if play_audio:
                 if audio_path is None:
                     try:
@@ -725,12 +751,11 @@ class ASCIIApp:
                     except Exception as e:
                         messagebox.showerror(self.languages[effective_lang]["audio_error"],
                                              self.languages[effective_lang]["audio_extraction_error"].format(error=e))
-            # LUT 
             lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
-            ascii_list = list(ascii_chars)
-            # Преобразование в ASCII
+            mapping_chars = list(ascii_chars[::-1]) if reverse_charset else list(ascii_chars)
+            
+            # Трансфер в ASCII, если High Cpu usage - GPU-ускорение
             def frame_to_ascii(frame):
-                # GPU-ускорение в High CPU
                 if cpu_mode == "high" and cv2.cuda.getCudaEnabledDeviceCount() > 0:
                     try:
                         gpu_frame = cv2.cuda_GpuMat()
@@ -738,22 +763,25 @@ class ASCIIApp:
                         gpu_gray = cv2.cuda.cvtColor(gpu_frame, cv2.COLOR_BGR2GRAY)
                         gpu_resized = cv2.cuda.resize(gpu_gray, output_size, interpolation=cv2.INTER_NEAREST)
                         gray = gpu_resized.download()
-                    except Exception as e:
+                    #Обычный рендер если ошибка
+                    except Exception:
                         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                         gray = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
                 else:
                     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                     gray = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
                 indices = lut[gray]
-                return [''.join(ascii_list[pixel] for pixel in row) for row in indices]
+                return [''.join(mapping_chars[pixel] for pixel in row) for row in indices]
+            
             # Пре-рендер
             if video_render_mode == "pre_render":
                 frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
                 fps = cap.get(cv2.CAP_PROP_FPS)
                 if fps <= 0:
-                    fps = 30 # фпс по умолчанию
-                frames, timestamps = [], []
+                    fps = 30 # дефолт фпс
+                frames = []
                 cancel_pre_render = threading.Event()
+                # Прогресс бар
                 def show_progress_bar(progress, total):
                     screen.fill((0, 0, 0))
                     bar_width = screen_width * 0.7
@@ -769,6 +797,7 @@ class ASCIIApp:
                     pygame.draw.rect(screen, (255, 255, 255), (x, y, bar_width, bar_height), 2)
                     pygame.draw.rect(screen, (255, 255, 255), (x, y, int((progress / total) * bar_width), bar_height))
                     pygame.display.flip()
+                # Загрузка кадров
                 def render_frames():
                     delay = 0 if cpu_mode == "high" else (0.01 if cpu_mode == "balanced" else 0.05)
                     futures = []
@@ -780,7 +809,6 @@ class ASCIIApp:
                             if not ret:
                                 break
                             futures.append(executor.submit(frame_to_ascii, frame))
-                            timestamps.append(i / fps)
                             if i % FRAME_UPDATE == 0:
                                 show_progress_bar(i + 1, frame_count)
                             time.sleep(delay)
@@ -814,6 +842,10 @@ class ASCIIApp:
                                              self.languages[effective_lang]["audio_error_msg"].format(error=e))
                 start_time = time.time()
                 clock = pygame.time.Clock()
+                render_width = output_size[0] * char_width
+                render_height = output_size[1] * char_height
+                x_offset = (screen_width - render_width) // 2
+                y_offset = (screen_height - render_height) // 2
                 running = True
                 while running:
                     for event in pygame.event.get():
@@ -825,20 +857,35 @@ class ASCIIApp:
                     screen.fill((0, 0, 0))
                     elapsed = time.time() - start_time
                     current_frame_index = int(elapsed * fps)
+                    # Синхронизация с индексом кадра
                     if current_frame_index >= len(frames):
                         start_time = time.time()
                         current_frame_index = 0
+                        if play_audio:
+                            pygame.mixer.music.rewind()
+                            pygame.mixer.music.play()
                     ascii_frame = frames[current_frame_index]
-                    for y, line in enumerate(ascii_frame):
+                    y_pos = y_offset
+                    for line in ascii_frame:
                         text_surface = font.render(line, True, (255, 255, 255))
-                        screen.blit(text_surface, (0, y * char_height))
+                        screen.blit(text_surface, (x_offset, y_pos))
+                        y_pos += char_height
+                    # Счётчик кадров
+                    if frame_counter:
+                        small_font = pygame.font.SysFont("Courier", 14)
+                        overlay_text = f"{self.languages[effective_lang]['frame_counter']}: {current_frame_index}"
+                        text_surface = small_font.render(overlay_text, True, (255, 255, 0))
+                        text_rect = text_surface.get_rect(topleft=(10, 10))
+                        pygame.draw.rect(screen, (0, 0, 0), text_rect)
+                        screen.blit(text_surface, text_rect)
                     pygame.display.flip()
                     clock.tick(60)
             else:
+                # Обработка в реальном времени
                 if play_audio and audio_path:
                     try:
                         pygame.mixer.music.load(audio_path)
-                        pygame.mixer.music.play()
+                        pygame.mixer.music.play(-1)
                     except Exception as e:
                         messagebox.showerror(self.languages[effective_lang]["audio_error"],
                                              self.languages[effective_lang]["audio_error_msg"].format(error=e))
@@ -853,9 +900,12 @@ class ASCIIApp:
                             break
                     ret, frame = cap.read()
                     if not ret:
-                        cap.release()
-                        running = False
-                        break
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                        if play_audio:
+                            pygame.mixer.music.rewind()
+                        start_time = time.time()
+                        continue
+                    current_frame_original = frame.copy()
                     frame_timestamp = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
                     elapsed_time = time.time() - start_time
                     wait_time = frame_timestamp - elapsed_time
@@ -863,10 +913,25 @@ class ASCIIApp:
                         time.sleep(wait_time)
                     ascii_frame = frame_to_ascii(frame)
                     screen.fill((0, 0, 0))
-                    for y, line in enumerate(ascii_frame):
-                        screen.blit(font.render(line, True, (255, 255, 255)), (0, y * char_height))
+                    render_width = output_size[0] * char_width
+                    render_height = output_size[1] * char_height
+                    x_offset = (screen_width - render_width) // 2
+                    y_offset = (screen_height - render_height) // 2
+                    y_pos = y_offset
+                    for line in ascii_frame:
+                        screen.blit(font.render(line, True, (255, 255, 255)), (x_offset, y_pos))
+                        y_pos += char_height
+                    # Счётчик кадров (реал-тайм)
+                    if frame_counter:
+                        current_frame_num = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+                        small_font = pygame.font.SysFont("Courier", 14)
+                        overlay_text = f"{self.languages[effective_lang]['frame_counter']}: {current_frame_index}"
+                        text_surface = small_font.render(overlay_text, True, (255, 255, 0))
+                        text_rect = text_surface.get_rect(topleft=(10, 10))
+                        pygame.draw.rect(screen, (0, 0, 0), text_rect)
+                        screen.blit(text_surface, text_rect)
                     pygame.display.flip()
-                    pygame.time.Clock().tick(120)  # 120 фпс лок
+                    pygame.time.Clock().tick(120)
                 cap.release()
             pygame.quit()
             if temp_audio_file and os.path.exists(temp_audio_file):
@@ -875,6 +940,7 @@ class ASCIIApp:
             messagebox.showerror(self.languages[effective_lang]["error"],
                                  self.languages[effective_lang]["error_occurred"].format(error=e))
             pygame.quit()
+
 
     # Старт обработки
     def start_processing(self):
