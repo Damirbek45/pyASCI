@@ -62,7 +62,7 @@ LANGUAGES = {
         "save_image": "Save image after exiting",
         "play_audio": "Play audio with video",
         "loading_text": "Loading",
-        "frame_counter": "Frame",
+        "frames": "Frame",
         "error": "Error",
         "failed_load_image": "Failed to load image.",
         "failed_open_video": "Failed to open video.",
@@ -145,7 +145,7 @@ LANGUAGES = {
         "save_image": "Сохранить изображение после выхода",
         "play_audio": "Воспроизводить аудио вместе с видео",
         "loading_text": "Загрузка",
-        "frame_counter": "Кадр",
+        "frames": "Кадр",
         "error": "Ошибка",
         "failed_load_image": "Не удалось загрузить изображение.",
         "failed_open_video": "Не удалось открыть видео.",
@@ -873,7 +873,7 @@ class ASCIIApp:
                     # Счётчик кадров
                     if frame_counter:
                         small_font = pygame.font.SysFont("Courier", 14)
-                        overlay_text = f"{self.languages[effective_lang]['frame_counter']}: {current_frame_index}"
+                        overlay_text = f"{self.languages[effective_lang]['frames']}: {current_frame_index}"
                         text_surface = small_font.render(overlay_text, True, (255, 255, 0))
                         text_rect = text_surface.get_rect(topleft=(10, 10))
                         pygame.draw.rect(screen, (0, 0, 0), text_rect)
@@ -925,7 +925,7 @@ class ASCIIApp:
                     if frame_counter:
                         current_frame_num = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
                         small_font = pygame.font.SysFont("Courier", 14)
-                        overlay_text = f"{self.languages[effective_lang]['frame_counter']}: {current_frame_index}"
+                        overlay_text = f"{self.languages[effective_lang]['frames']}: {current_frame_index}"
                         text_surface = small_font.render(overlay_text, True, (255, 255, 0))
                         text_rect = text_surface.get_rect(topleft=(10, 10))
                         pygame.draw.rect(screen, (0, 0, 0), text_rect)

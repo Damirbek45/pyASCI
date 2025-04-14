@@ -33,7 +33,7 @@ The application allows to adjust the font size,select a CPU usage (High, Normal,
 
 
 - Pygame
-- OpenCV-Python (`opencv-pythong`)
+- OpenCV-Python (`opencv-python`)
 - NumPy (`numpy`)
 - Darkdetect (`darkdetect`)
 - Moviepy (`moviepy`)
@@ -89,7 +89,7 @@ pyASCI это приложение на языке Python, преобразую�
 
 
 - Pygame
-- OpenCV-Python (`opencv-pythong`)
+- OpenCV-Python (`opencv-python`)
 - NumPy (`numpy`)
 - Darkdetect (`darkdetect`)
 
