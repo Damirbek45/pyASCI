@@ -32,7 +32,7 @@ The application allows to adjust the font size,select a CPU usage (High, Normal,
 ### Requirements
 
 
-- Pygame
+- Pygame (`pygame`)
 - OpenCV-Python (`opencv-python`)
 - NumPy (`numpy`)
 - Darkdetect (`darkdetect`)
@@ -53,7 +53,7 @@ pip install pygame opencv-python numpy darkdetect moviepy
 ### Usage
 
 1. Click the **Select** button to choose a media file (image or video).
-2. For video and image select a font chars size, resolution(original or fullscreen) and save file or not. For video, select a CPU Usage(renders faster but uses more resources) and render options(on a fly or pre-render)
+2. For video and image select a font chars size, resolution(original or fullscreen) and save file or not. For video, select a CPU Usage(renders faster but uses more CPU resources) and render options(real-time or pre-render)
 3. ASCII version will be opened in full screen after rendering, video will loop infinitely
 4. Press **ESC** to exit.
 
@@ -88,11 +88,11 @@ pyASCI это приложение на языке Python, преобразую�
 ### Библиотеки
 
 
-- Pygame
+- Pygame (`pygame`)
 - OpenCV-Python (`opencv-python`)
 - NumPy (`numpy`)
 - Darkdetect (`darkdetect`)
-
+- Moviepy (`moviepy`)
 
 ### Установка
 
@@ -108,7 +108,7 @@ pip install pygame opencv-python numpy darkdetect moviepy
 ### Использование
 
 1. Нажмите **Выбрать** для выбора медиа(видео или изображение).
-2. Для видео и изображения выберите размер шрифта. Для изображения выберите решим отображения(оригинал или растянутый на весь экран) и сохранить ли файл или нет. Для видео выберите использование процессора (рендеринг будет быстрее, но использует больше ресурсов) и режим рендера(на лету или предварительная загрузка).
+2. Для видео и изображения выберите размер шрифта. Для изображения выберите режим отображения(оригинал или растянутый на весь экран) и сохранить ли файл или нет. Для видео выберите режим использования процессора (рендеринг будет быстрее, но использует больше ресурсов) и режим рендера(в реальном времени или предварительная загрузка).
 3. ASCII-версия будет открыта в полном экране после рендеринга, видео будет постоянно запускаться заново.
 4. Нажмите ESC для выхода.
 
