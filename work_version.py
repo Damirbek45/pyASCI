@@ -15,13 +15,17 @@ import darkdetect
 import moviepy as mp
 
 # Глобальные переменные
+
+# Пресеты
 DEFAULT = " .:-=+*#%@"
 DETAILED = " .`'!|,\"\\;:lji-trf1][I)(}{\\/~zyxvseca_^>=<*uqponkhgdb?+J532YTLF40wZXSEC96mURQPOKGDA8NHB&#M%W$@"
 MINIMUM = " .oO@"
-FRAME_UPDATE = 150  # каждые 150 кадров, можно изменить
+
+FRAME_UPDATE = 150  # обновление прогресс бара
 FONT_SIZES = [3, 5, 10, 15, 20, 25, 30]  # размеры шрифта
 
 # Локализация (языки)
+
 LANGUAGES = {
     "en": {
         "main_title": "pyASCI",
@@ -192,6 +196,7 @@ LANGUAGES = {
 }
 
 # Оформления (темы)
+
 THEMES = {
     "light": {
         "bg": "white",
@@ -212,6 +217,7 @@ THEMES = {
 }
 
 # Основной класс приложения
+
 class ASCIIApp:
     def __init__(self, root):
         self.root = root
@@ -223,10 +229,10 @@ class ASCIIApp:
         self._build_ui()
         self.apply_theme()
         self.center_window(self.root)
-        # Вызовы для обновления языка
+        # Вызов для обновления языка
         self.language_update_callbacks = []
 
-    # Для появления окон в центре экрана
+    # Для центрирования окон
     def center_window(self, window):
         window.update_idletasks()
         width = window.winfo_reqwidth()
@@ -256,6 +262,7 @@ class ASCIIApp:
         return self.detect_system_language() if self.current_lang == "system" else self.current_lang
 
     # Инициализация основного окна приложения
+
     def _build_ui(self):
         effective_lang = self.get_effective_lang()
         self.root.title(self.languages[effective_lang]["main_title"])
@@ -296,11 +303,13 @@ class ASCIIApp:
         for callback in self.language_update_callbacks:
             callback()
 
+    # Установка языка
     def set_language(self, lang):
         self.current_lang = lang
         self.update_ui()
         self.update_all_language_windows()
 
+    # Получение текущей темы
     def get_actual_theme(self):
         if self.current_theme == "system":
             detected = darkdetect.theme()
@@ -309,6 +318,7 @@ class ASCIIApp:
             return "light"
         return self.current_theme.lower()
 
+    # Применение темы
     def apply_theme(self, widget=None):
         theme_name = self.get_actual_theme()
         colors = self.themes.get(theme_name, self.themes["light"])
@@ -348,6 +358,7 @@ class ASCIIApp:
                          bg=colors["bg"], fg=colors["fg"], font=("Arial", 10), justify="left")
         instr.grid(row=0, column=0, columnspan=3, padx=10, pady=5, sticky="w")
 
+        # Обновление текста
         def update_dialog():
             eff_lang = self.get_effective_lang()
             dialog.title(self.languages[eff_lang]["settings_button"])
@@ -394,7 +405,7 @@ class ASCIIApp:
             rb.pack(side=tk.LEFT, padx=5)
             lang_rbs.append((code, rb))
 
-        # Выбор оформления
+        # Интерфейс обновления
         theme_frame = tk.Frame(dialog, bg=colors["bg"], padx=10, pady=5)
         theme_frame.grid(row=2, column=0, columnspan=3, sticky="w")
         theme_label = tk.Label(theme_frame, text=self.languages[effective_lang]["theme_label"],
@@ -423,6 +434,7 @@ class ASCIIApp:
         close_button.grid(row=3, column=0, columnspan=3, pady=10)
         self.center_window(dialog)
 
+    # Установить оформление
     def set_theme(self, theme):
         self.current_theme = theme
         self.apply_theme()
@@ -487,11 +499,12 @@ class ASCIIApp:
         bottom_frame = tk.Frame(dialog, bg=colors["bg"])
         bottom_frame.pack(pady=10, fill="x")
         
+        # Вывод сообщения Info
         def show_custom_message(title, message):
             msg_win = tk.Toplevel(dialog)
             msg_win.title(title)
             self.apply_theme(msg_win)
-            self.center_window(msg_win)
+            self.center_window(msg_win)# 
             tk.Label(msg_win, text=message, bg=colors["bg"], fg=colors["fg"], wraplength=400).pack(padx=20, pady=20)
             tk.Button(msg_win, text="OK", command=msg_win.destroy,
                       bg=colors["button_bg"], fg=colors["button_fg"]).pack(pady=(0,20))
@@ -531,6 +544,7 @@ class ASCIIApp:
             dialog.grid_columnconfigure(col, weight=1)
         current_row = 1
 
+        # Опции для видео
         if video_options:
             tk.Label(dialog, text=self.languages[effective_lang]["cpu_mode_label"],
                      bg=colors["bg"], fg=colors["fg"]).grid(row=current_row, column=0, padx=10, pady=5, sticky="w")
@@ -582,6 +596,8 @@ class ASCIIApp:
                            selectcolor=colors["entry_bg"]).grid(row=current_row, column=0, columnspan=3, padx=10, pady=5, sticky="w")
             current_row += 1
             result = (size_var.get(), cpu_mode_var.get(), video_render_var.get(), play_audio_var.get(), reverse_charset_var.get(), frame_counter_var.get())
+
+        # Опции для изображения
         else:
             tk.Label(dialog, text=self.languages[effective_lang]["image_mode_label"],
                      bg=colors["bg"], fg=colors["fg"]).grid(row=current_row, column=0, padx=10, pady=5, sticky="w")
@@ -610,6 +626,8 @@ class ASCIIApp:
                            selectcolor=colors["entry_bg"]).grid(row=current_row, column=0, columnspan=3, padx=10, pady=5, sticky="w")
             current_row += 1
             result = (size_var.get(), image_mode_var.get(), save_image_var.get(), reverse_charset_var.get())
+
+        # Вывод сообщения Info для темной темы
         def show_custom_message(title, message):
             msg_win = tk.Toplevel(dialog)
             msg_win.title(title)
@@ -740,6 +758,7 @@ class ASCIIApp:
             char_width, char_height = font.size("A")
             output_size = (screen_width // char_width, screen_height // char_height)
             temp_audio_file = None
+
             # Создание временного мп3 файла для аудио
             if play_audio:
                 if audio_path is None:
@@ -754,7 +773,7 @@ class ASCIIApp:
             lut = np.floor(np.linspace(0, len(ascii_chars) - 1, 256)).astype(np.uint8)
             mapping_chars = list(ascii_chars[::-1]) if reverse_charset else list(ascii_chars)
             
-            # Трансфер в ASCII, если High Cpu usage - GPU-ускорение
+            # Трансфер в ASCII, если High Cpu usage включен - CUDA для ускорения загрузки
             def frame_to_ascii(frame):
                 if cpu_mode == "high" and cv2.cuda.getCudaEnabledDeviceCount() > 0:
                     try:
@@ -763,7 +782,8 @@ class ASCIIApp:
                         gpu_gray = cv2.cuda.cvtColor(gpu_frame, cv2.COLOR_BGR2GRAY)
                         gpu_resized = cv2.cuda.resize(gpu_gray, output_size, interpolation=cv2.INTER_NEAREST)
                         gray = gpu_resized.download()
-                    #Обычный рендер если ошибка
+
+                    # Без ускорения рендера если ошибка
                     except Exception:
                         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                         gray = cv2.resize(gray, output_size, interpolation=cv2.INTER_NEAREST)
@@ -781,6 +801,7 @@ class ASCIIApp:
                     fps = 30 # дефолт фпс
                 frames = []
                 cancel_pre_render = threading.Event()
+
                 # Прогресс бар
                 def show_progress_bar(progress, total):
                     screen.fill((0, 0, 0))
@@ -797,6 +818,7 @@ class ASCIIApp:
                     pygame.draw.rect(screen, (255, 255, 255), (x, y, bar_width, bar_height), 2)
                     pygame.draw.rect(screen, (255, 255, 255), (x, y, int((progress / total) * bar_width), bar_height))
                     pygame.display.flip()
+
                 # Загрузка кадров
                 def render_frames():
                     delay = 0 if cpu_mode == "high" else (0.01 if cpu_mode == "balanced" else 0.05)
@@ -817,6 +839,8 @@ class ASCIIApp:
                     show_progress_bar(frame_count, frame_count)
                 render_thread = threading.Thread(target=render_frames)
                 render_thread.start()
+
+                # Выход из приложения на ESC
                 while render_thread.is_alive():
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -857,6 +881,7 @@ class ASCIIApp:
                     screen.fill((0, 0, 0))
                     elapsed = time.time() - start_time
                     current_frame_index = int(elapsed * fps)
+
                     # Синхронизация с индексом кадра
                     if current_frame_index >= len(frames):
                         start_time = time.time()
@@ -870,6 +895,7 @@ class ASCIIApp:
                         text_surface = font.render(line, True, (255, 255, 255))
                         screen.blit(text_surface, (x_offset, y_pos))
                         y_pos += char_height
+
                     # Счётчик кадров
                     if frame_counter:
                         small_font = pygame.font.SysFont("Courier", 14)
@@ -880,8 +906,9 @@ class ASCIIApp:
                         screen.blit(text_surface, text_rect)
                     pygame.display.flip()
                     clock.tick(60)
+
+            # Обработка в реальном времени
             else:
-                # Обработка в реальном времени
                 if play_audio and audio_path:
                     try:
                         pygame.mixer.music.load(audio_path)
@@ -921,6 +948,7 @@ class ASCIIApp:
                     for line in ascii_frame:
                         screen.blit(font.render(line, True, (255, 255, 255)), (x_offset, y_pos))
                         y_pos += char_height
+
                     # Счётчик кадров (реал-тайм)
                     if frame_counter:
                         current_frame_num = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
